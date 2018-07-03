@@ -1,0 +1,26 @@
+{
+    "name": "mongdch/mon-orm",
+    "description": "the php mysql orm",
+    "version": "v1.0.1",
+    "keywords": [
+    	"mysql",
+    	"mon",
+        "orm"
+    ],
+    "homepage": "http://blog.gdmonlam.com/",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "MonGDCH",
+            "email": "985558837@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "mon\\": "src"
+        }
+    }
+}
