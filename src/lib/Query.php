@@ -2,6 +2,7 @@
 namespace mon\lib;
 
 use PDO;
+use Closure;
 use PDOStatement;
 use mon\lib\Builder;
 use mon\lib\Connection;
@@ -159,17 +160,18 @@ class Query
      */
     public function action($callback)
     {
-        if(is_callable($callback)){
+        if($callback instanceof Closure){
         	// 开启事务
             $this->startTrans();
 
             // 执行匿名回调
-            $result = $callback($this);
+            $result = call_user_func($callback, $this);
             if($result === false){
                 $this->rollback();
             }else{
                 $this->commit();
             }
+            return $result;
         }else{
             return false;
         }
@@ -241,15 +243,35 @@ class Query
         }
         // 获取绑定值
         $bind = $this->getBind();
-
         // 判断调试模式,返回sql
         if(isset($options['debug']) && $options['debug'])
         {
             return $this->connection->getRealSql($sql, $bind);
         }
-
         return $this->execute($sql, $bind);
 	}
+
+    /**
+     * 字段自增
+     *
+     * @param [type]  $field 字段名
+     * @param integer $val   步长
+     */
+    public function setInc($field, $val = 0)
+    {
+        return $this->update([$field => ['inc', $val]]);
+    }
+
+    /**
+     * 字段自减
+     *
+     * @param [type]  $field 字段名
+     * @param integer $val   步长
+     */
+    public function setDec($field, $val = 0)
+    {
+        return $this->update([$field => ['dec', $val]]);
+    }
 
     /**
      * 插入操作, 默认返回影响行数
