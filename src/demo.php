@@ -3,7 +3,7 @@
 use mon\Db;
 use mon\Model;
 
-require '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 /*
 // DB直调
@@ -54,13 +54,27 @@ class Test extends Model
 
 	public function demo2()
 	{
-		return $this->find();
+		return $this->debug()->find();
+	}
+
+	public function inc()
+	{
+		return $this->where('id', 1)->setInc('status', 1);
 	}
 }
 
-$data1 = Test::where(['id' => 2])->find();
-$test =  new Test;
-$data2 = $test->demo();
-$data3 = $test->demo2();
+// $data1 = Test::where(['id' => 2])->find();
+// var_dump($data1);
 
-var_dump( $data1, $data2, $data3);
+$test =  new Test;
+
+// $inc = $test->inc();
+
+// var_dump($inc);
+
+
+// $data2 = $test->demo();
+$data3 = $test->demo2();
+var_dump($data3);
+
+// var_dump($data2, $data3);

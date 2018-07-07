@@ -208,9 +208,9 @@ class Query
 	public function find()
 	{
 		$result = $this->limit(1)->select();
-		if($result instanceof PDOStatement)
+		if($result instanceof PDOStatement || is_string($result))
         {
-            // 返回PDOStatement对象
+            // 返回PDOStatement对象或者查询语句
             return $result;
         }
 
