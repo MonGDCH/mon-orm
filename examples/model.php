@@ -1,32 +1,11 @@
 <?php
-
-use mon\Db;
-use mon\Model;
-
 require __DIR__ . '/../vendor/autoload.php';
 
-/*
-// DB直调
+use mon\Model;
 
-$config['database'] = 'test';
-$config['username'] = 'root';
-$config['password'] = 'root';
-
-
-$data1 = Db::connect($config)->table('lmf_user')->select();
-
-Db::setConfig($config);
-$data2 = Db::table('lmf_user a')->join('blog_user b', 'a.id=b.id', 'left')->select();
-$sql = Db::getLastSql();
-
-
-
-var_dump($data1, $data2, $sql);
-
-*/
 
 // 模型用法
-class Test extends Model
+class User extends Model
 {
 	/**
 	 * 模型默认操作表名
@@ -57,24 +36,33 @@ class Test extends Model
 		return $this->debug()->find();
 	}
 
+	public function demo3()
+	{
+		return $this->debug()->sum('id');
+	}
+
 	public function inc()
 	{
 		return $this->where('id', 1)->setInc('status', 1);
 	}
+
+	public function  incs()
+	{
+		return $this->where('id', 2)->inc('status, admin', 1)->update();
+	}
 }
 
-// $data1 = Test::where(['id' => 2])->find();
-// var_dump($data1);
+$user =  new User;
+$demo2 = $user->demo2();
+$demo3 = $user->demo3();
+var_dump($demo2, $demo3);
 
-$test =  new Test;
+// 静态调用
+$data2 = User::select();
+var_dump($data2);
 
-// $inc = $test->inc();
-
-// var_dump($inc);
-
-
-// $data2 = $test->demo();
-$data3 = $test->demo2();
+$data3 = User::sum('status');
 var_dump($data3);
+// $setInc = $user->incs();
+// var_dump($setInc);
 
-// var_dump($data2, $data3);

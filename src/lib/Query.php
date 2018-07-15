@@ -297,7 +297,7 @@ class Query
         }
 
         // 执行操作
-        $result = (0 === $sql) ? 0 : $this->execute($sql, $bind);
+        $result = (false === $sql) ? fasle : $this->execute($sql, $bind);
         // 执行成功，判断是否返回自增ID
         if($result && $getLastInsID)
         {
@@ -372,6 +372,11 @@ class Query
     public function count($field = '*')
     {
         $res = $this->field('COUNT('.$field.') AS mondb_count')->find();
+        if($res instanceof PDOStatement || is_string($res))
+        {
+            // 返回PDOStatement对象或者查询语句
+            return $res;
+        }
 
         return isset($res['mondb_count']) ? $res['mondb_count'] : false;
     }
@@ -385,6 +390,11 @@ class Query
     public function sum($field)
     {
         $res = $this->field('SUM('.$field.') AS mondb_sum')->find();
+        if($res instanceof PDOStatement || is_string($res))
+        {
+            // 返回PDOStatement对象或者查询语句
+            return $res;
+        }
 
         return isset($res['mondb_sum']) ? $res['mondb_sum'] : false;
     }
@@ -398,6 +408,11 @@ class Query
     public function min($field)
     {
         $res = $this->field('MIN('.$field.') AS mondb_min')->find();
+        if($res instanceof PDOStatement || is_string($res))
+        {
+            // 返回PDOStatement对象或者查询语句
+            return $res;
+        }
 
         return isset($res['mondb_min']) ? $res['mondb_min'] : false;
     }
@@ -406,12 +421,16 @@ class Query
      * MAX查询
      * 
      * @param string $field 字段名
-     * @param bool   $force   强制转为数字类型
      * @return mixed
      */
     public function max($field)
     {
         $res = $this->field('MAX('.$field.') AS mondb_max')->find();
+        if($res instanceof PDOStatement || is_string($res))
+        {
+            // 返回PDOStatement对象或者查询语句
+            return $res;
+        }
 
         return isset($res['mondb_max']) ? $res['mondb_max'] : false;
     }
@@ -425,6 +444,11 @@ class Query
     public function avg($field)
     {
         $res = $this->field('AVG('.$field.') AS mondb_avg')->find();
+        if($res instanceof PDOStatement || is_string($res))
+        {
+            // 返回PDOStatement对象或者查询语句
+            return $res;
+        }
 
         return isset($res['mondb_avg']) ? $res['mondb_avg'] : false;
     }

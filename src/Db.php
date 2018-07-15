@@ -21,7 +21,7 @@ class Db
 	private static $pool = [];
 
 	/**
-	 * 保存配置
+	 * DB配置
 	 *
 	 * @var array
 	 */

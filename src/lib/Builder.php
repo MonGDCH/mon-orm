@@ -91,7 +91,7 @@ class Builder
         // 分析并处理数据
         $data = $this->parseData($data, $options);
         if (empty($data)) {
-            return 0;
+            return false;
         }
         $fields = array_keys($data);
         $values = array_values($data);
