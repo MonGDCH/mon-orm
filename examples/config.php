@@ -3,7 +3,7 @@
  * 数据库配置
  *
  * @author Mon <985558837@qq.com>
- * @version v1.0.1 DB默认 配置
+ * @version v2.0 DB默认 配置
  */
 
 return [
@@ -36,6 +36,4 @@ return [
     'charset'         => 'utf8',
     // 返回结果集类型
     'result_type'  	  => PDO::FETCH_ASSOC,
-    // 断线是否重连，注意：强制重连有可能导致数据库core掉
-    'break_reconnect' => false,
 ];

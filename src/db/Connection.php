@@ -1,11 +1,11 @@
 <?php
-namespace mon\lib;
+namespace mon\db;
 
 use PDO;
 use Exception;
 use Throwable;
 use PDOException;
-use mon\lib\Query;
+use mon\db\Query;
 use mon\exception\MondbException;
 
 /**
@@ -57,6 +57,13 @@ class Connection
 	 * @var integer
 	 */
 	protected $numRows = 0;
+
+    /**
+     * 事务级别, 防止出现事务嵌套
+     *
+     * @var integer
+     */
+    protected $transLevel = 0;
 
 	/**
 	 * DB配置
@@ -196,7 +203,7 @@ class Connection
             $error = '';
         }
         if ('' != $this->queryStr) {
-            $error .= "\n [ SQL语句 ] : " . $this->getLastSql();
+            $error .= "\n [ SQL ] : " . $this->getLastSql();
         }
         return $error;
     }
@@ -215,39 +222,16 @@ class Connection
                 $this->config = array_merge($this->config, $config);
             }
 
-            $commands = [];
-            $dsn = '';
+            // 生成mysql连接dsn
             $is_port = ( isset($this->config['port']) && is_int($this->config['port'] * 1) );
-            $type = $this->config['type'];
+            $dsn = 'mysql:host=' . $this->config['host'] . 
+                    ($is_port ? ';port=' . $this->config['port'] : '') . 
+                    ';dbname=' . $this->config['database'];
 
-            switch ($type)
-            {
-                case 'mysql':
-                    $dsn = $type . ':host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
-
-                    // 拒绝使用双引号
-                    $commands[] = 'SET SQL_MODE=ANSI_QUOTES';
-                    break;
-
-                case 'pgsql':
-                    $dsn = $type . ':host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
-                    break;
-
-                case 'sqlite':
-                    $dsn = $type . ':' . $this->config['sqlLite_file'];
-                    $this->config['username'] = null;
-                    $this->config['password'] = null;
-                    break;
-                default:
-                    throw new MondbException("不支持对应的DB类型 :: {$type}", MondbException::TYPE_NOT_ALLOW);
-                    break;
+            if(!empty($this->config['charset'])){
+                $dsn .= ';charset=' . $this->config['charset'];
             }
-
-            if(in_array($type, array('mysql', 'pgsql')) && $this->config['charset'])
-            {
-                $commands[] = "SET NAMES '" . $this->config['charset'] . "'";
-            }
-
+ 
             // 链接
             $this->link = new PDO(
                 $dsn,
@@ -256,17 +240,10 @@ class Connection
                 $this->config['params']
             );
 
-            foreach($commands as $value)
-            {
-                $this->link->exec($value);
-            }
-
             return $this;
-        }
-        catch(PDOException $e)
-        {
+        }catch(PDOException $e){
             throw new MondbException(
-                '链接失败: '.$e->getMessage(), 
+                'Link Error: '.$e->getMessage(), 
                 MondbException::LINK_FAILURE, 
                 $e
             );
@@ -304,48 +281,29 @@ class Connection
 			$this->bind = $bind;
 		}
 
-        try{
-            // 释放上一次查询的结果集
-            if(!empty($this->PDOStatement))
-            {
-                $this->free();
-            }        
+        // 释放上一次查询的结果集
+        if(!empty($this->PDOStatement))
+        {
+            $this->free();
+        }        
 
-            // 预处理SQL
-            if (empty($this->PDOStatement))
-            {
-                $this->PDOStatement = $this->getLink()->prepare($sql);
-            }
-            // 是否为存储过程调用
-            $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
-            // 参数绑定
-            if ($procedure) {
-                $this->bindParam($bind);
-            } else {
-                $this->bindValue($bind);
-            }
-            // 执行查询
-            $this->PDOStatement->execute();
-            // 返回结果集
-            return $this->getResult($pdo, $procedure); 
-        } catch (PDOException $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $pdo);
-            }
-            throw $e;
-        } catch (Throwable $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $pdo);
-            }
-            throw $e;
-        } catch (Exception $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $pdo);
-            }
-            throw $e;
+        // 预处理SQL
+        if (empty($this->PDOStatement))
+        {
+            $this->PDOStatement = $this->getLink()->prepare($sql);
         }
-
-
+        // 是否为存储过程调用
+        $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+        // 参数绑定
+        if ($procedure) {
+            $this->bindParam($bind);
+        } else {
+            $this->bindValue($bind);
+        }
+        // 执行查询
+        $this->PDOStatement->execute();
+        // 返回结果集
+        return $this->getResult($pdo, $procedure); 
 	}
 
 	/**
@@ -362,47 +320,28 @@ class Connection
 		{
 			$this->bind = $bind;
 		}
-
-        try {          
-            //释放前次的查询结果
-            if (!empty($this->PDOStatement) && $this->PDOStatement->queryString != $sql) {
-                $this->free();
-            }
-            // 预处理
-            if (empty($this->PDOStatement)) {
-                $this->PDOStatement = $this->getLink()->prepare($sql);
-            }
-            // 是否为存储过程调用
-            $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
-            // 参数绑定
-            if ($procedure) {
-                $this->bindParam($bind);
-            } else {
-                $this->bindValue($bind);
-            }
-            // 执行语句
-            $this->PDOStatement->execute();
-            // 返回影响行数
-            $this->numRows = $this->PDOStatement->rowCount();
-            return $this->numRows;
-
-        } catch (PDOException $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
-        } catch (Throwable $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
-        } catch (Exception $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
+        
+        //释放前次的查询结果
+        if (!empty($this->PDOStatement) && $this->PDOStatement->queryString != $sql) {
+            $this->free();
         }
-
+        // 预处理
+        if (empty($this->PDOStatement)) {
+            $this->PDOStatement = $this->getLink()->prepare($sql);
+        }
+        // 是否为存储过程调用
+        $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+        // 参数绑定
+        if ($procedure) {
+            $this->bindParam($bind);
+        } else {
+            $this->bindValue($bind);
+        }
+        // 执行语句
+        $this->PDOStatement->execute();
+        // 返回影响行数
+        $this->numRows = $this->PDOStatement->rowCount();
+        return $this->numRows;
 	}
 
 	/**
@@ -412,23 +351,13 @@ class Connection
      */
     public function startTrans()
     {
-        try {
+        ++$this->transLevel;
+        // 只有当事务无嵌套才开启事务
+        if($this->transLevel == 1){
             $this->getLink()->beginTransaction();
-        } catch (PDOException $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
-        } catch (Throwable $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
-        } catch (Exception $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-            throw $e;
+        }
+        elseif($this->transLevel > 1){
+            $this->getLink()->exec($this->parseSavepoint('trans'.$this->transLevel));
         }
     }
 
@@ -439,7 +368,10 @@ class Connection
      */
     public function commit()
     {
-        $this->getLink()->commit();
+        if($this->transLevel == 1){
+            $this->getLink()->commit();
+        }
+        --$this->transLevel;
     }
 
     /**
@@ -449,7 +381,76 @@ class Connection
      */
     public function rollBack()
     {
-        $this->getLink()->rollBack();
+        if($this->transLevel == 1){
+            $this->transLevel = 0;
+            $this->getLink()->rollBack();
+        }
+        elseif($this->transLevel > 1){
+            $this->getLink()->exec($this->parseSavepointRollBack('trans'.$this->transLevel));
+        }
+        $this->transLevel = max(0, $this->transLevel - 1);
+    }
+
+    /**
+     * 获取表字段信息
+     *
+     * @param  [type] $table 表名
+     * @return [type]        [description]
+     */
+    public function getFields($table)
+    {
+        $sql = 'SHOW COLUMNS FROM ' . $table;
+        $pdoStatement = $this->query($sql, [], true);
+        $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        $info = [];
+        if($result){
+            foreach($result as $key => $val){
+                $val = array_change_key_case($val);
+                $info[$val['field']] = [
+                    'name'    => $val['field'],
+                    'type'    => $val['type'],
+                    'notnull' => (bool) ('' === $val['null']), // not null is empty, null is yes
+                    'default' => $val['default'],
+                    'primary' => (strtolower($val['key']) == 'pri'),
+                    'autoinc' => (strtolower($val['extra']) == 'auto_increment'),
+                ];
+            }
+        }
+
+        return $info;
+    }
+
+    /**
+     * 获取表信息
+     *
+     * @param  [type] $database 数据库名
+     * @return [type]           [description]
+     */
+    public function getTables($database = '')
+    {
+        $sql    = !empty($dbName) ? 'SHOW TABLES FROM ' . $database : 'SHOW TABLES';
+        $pdoStatement    = $this->query($sql, [], true);
+        $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        $info   = [];
+        foreach ($result as $key => $val) {
+            $info[$key] = current($val);
+        }
+
+        return $info;
+    }
+
+    /**
+     * SQL性能分析
+     *
+     * @param  [type] $sql [description]
+     * @return [type]      [description]
+     */
+    public function explain($sql)
+    {
+        $sql = 'EXPLAIN ' . $sql;
+        $pdoStatement    = $this->query($sql, [], true);
+        $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        return array_change_key_case($result);
     }
 
 	/**
@@ -540,7 +541,7 @@ class Connection
             }
             if (!$result) {
                 throw new MondbException(
-                    "绑定参数失败 '{$param}'",
+                    "Bind value error: {$param}",
                     MondbException:: BIND_VALUE_ERROR
                 );
             }
@@ -566,7 +567,7 @@ class Connection
             if (!$result) {
                 $param = array_shift($val);
                 throw new Exception(
-                    "绑定参数失败 '{$param}'",
+                    "Bind param error: {$param}",
                     MondbException:: BIND_VALUE_ERROR
                 );
             }
@@ -614,40 +615,25 @@ class Connection
     }
 
     /**
-     * 是否断线
-     * 
-     * @param \PDOException|\Exception  $e 异常对象
-     * @return bool
+     * 生成定义保存点的SQL
+     *
+     * @param $name
+     * @return string
      */
-    protected function isBreak($e)
+    protected function parseSavepoint($name)
     {
-        if(!$this->getConfig('break_reconnect'))
-        {
-            return false;
-        }
+        return 'SAVEPOINT ' . $name;
+    }
 
-        $info = [
-            'server has gone away',
-            'no connection to the server',
-            'Lost connection',
-            'is dead or not enabled',
-            'Error while sending',
-            'decryption failed or bad record mac',
-            'server closed the connection unexpectedly',
-            'SSL connection has been closed unexpectedly',
-            'Error writing data to the connection',
-            'Resource deadlock avoided',
-            'failed with errno',
-        ];
-
-        $error = $e->getMessage();
-
-        foreach ($info as $msg) {
-            if (false !== stripos($error, $msg)) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * 生成回滚到保存点的SQL
+     *
+     * @param $name
+     * @return string
+     */
+    protected function parseSavepointRollBack($name)
+    {
+        return 'ROLLBACK TO SAVEPOINT ' . $name;
     }
 
 }

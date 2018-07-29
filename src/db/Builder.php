@@ -1,5 +1,5 @@
 <?php
-namespace mon\lib;
+namespace mon\db;
 
 use mon\exception\MondbException;
 

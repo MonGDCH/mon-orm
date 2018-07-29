@@ -40,4 +40,34 @@ class MondbException extends Exception
 	 * 未设置查询的表
 	 */
 	const TABLE_NULL_FOUND = 10500;
+
+	/**
+	 * 场景查询不存在
+	 */
+	const SCOPE_NULL_FOUND = 10600;
+
+	/**
+	 * 查询对象未绑定模型
+	 */
+	const QUERY_MODEL_NOT_BIND = 10700;
+
+	/**
+	 * 操作模型不支持自动完成 - save方法
+	 */
+	const MODEL_NOT_SUPPORT_SAVE = 10710;
+
+	/**
+	 * 操作模型不支持自动完成 - get方法
+	 */
+	const MODEL_NOT_SUPPORT_GET = 10720;
+
+	/**
+	 * 操作模型不支持自动完成 - save方法
+	 */
+	const MODEL_NOT_SUPPORT_ALL = 10730;
+
+	/**
+	 * 操作模型不支持自动完成 - saveAll方法
+	 */
+	const MODEL_NOT_SUPPORT_SAVEALL = 10740;
 }

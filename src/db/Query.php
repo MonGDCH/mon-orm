@@ -1,11 +1,12 @@
 <?php
-namespace mon\lib;
+namespace mon\db;
 
 use PDO;
 use Closure;
 use PDOStatement;
-use mon\lib\Builder;
-use mon\lib\Connection;
+use mon\Model;
+use mon\db\Builder;
+use mon\db\Connection;
 use mon\exception\MondbException;
 
 
@@ -52,6 +53,13 @@ class Query
      */
     protected $bind = [];
 
+    /**
+     * 当前模型对象
+     *
+     * @var [type]
+     */
+    protected $model;
+
 	/**
 	 * 构造方法
 	 *
@@ -62,6 +70,28 @@ class Query
 		$this->connection = $connection;
 		$this->builder = $this->getBuilder();
 	}
+
+    /**
+     * 指定模型
+     *
+     * @param Model $model 模型对象实例
+     * @return $this
+     */
+    public function model(Model $model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
+    /**
+     * 获取当前的模型对象
+     *
+     * @return Model|null
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
 
 	/**
 	 * 获取当前的查询参数
@@ -214,7 +244,7 @@ class Query
             return $result;
         }
 
-        return isset($result[0]) ? $result[0] : null;
+        return isset($result[0]) ? $result[0] : [];
 	}
 
 	/**
@@ -228,8 +258,9 @@ class Query
 		$options = $this->parseExpress();
         if(empty($options['where']))
         {
+            // 更新操作，查询条件不能为空
             throw new MondbException(
-                "更新操作查询条件不能为空!",
+                "The update operation query condition cannot be empty!",
                 MondbException::WHERE_IS_NULL
             );
         }
@@ -345,8 +376,9 @@ class Query
         $options = $this->parseExpress();
         if(empty($options['where']))
         {
+            // 操作操作，查询条件不能为空
             throw new MondbException(
-                "删除操作查询条件不能为空!",
+                "The delete operation query condition cannot be empty!",
                 MondbException::WHERE_IS_NULL
             );
         }
@@ -1106,7 +1138,7 @@ class Query
 
         if (empty($options['table'])) {
             throw new MondbException(
-                '未设置查询的表',
+                'The query table is not set!',
                 MondbException::TABLE_NULL_FOUND
             );
         }
@@ -1137,6 +1169,88 @@ class Query
 
         $this->options = [];
         return $options;
+    }
+
+    /**
+     * 模型类save方法支持
+     *
+     * @param  [type] $data     操作数据
+     * @param  [type] $where    where条件，存在则为更新，反之新增
+     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @return [type] [description]
+     */
+    public function save($data, $where = null, $sequence = null)
+    {
+        if(!$this->getModel())
+        {
+            throw new MondbException(
+                'The instance is not bound to the Model!', 
+                MondbException::QUERY_MODEL_NOT_BIND
+            );
+        }
+        if(!method_exists($this->getModel(), 'save'))
+        {
+            throw new MondbException(
+                'The model not support autocomplete of save!',
+                MondbException::MODEL_NOT_SUPPORT_SAVE
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'save'], [$data, $where, $sequence, $this]);
+    }
+
+    /**
+     * 模型类get方法支持
+     *
+     * @param  [type] $data     操作数据
+     * @param  [type] $where    where条件，存在则为更新，反之新增
+     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @return [type] [description]
+     */
+    public function get($where = [])
+    {
+        if(!$this->getModel())
+        {
+            throw new MondbException(
+                'The instance is not bound to the Model!', 
+                MondbException::QUERY_MODEL_NOT_BIND);
+        }
+        if(!method_exists($this->getModel(), 'get'))
+        {
+            throw new MondbException(
+                'The model not support autocomplete of get!',
+                MondbException::MODEL_NOT_SUPPORT_GET
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'get'], [$where, $this]);
+    }
+
+    /**
+     * 模型类all方法支持
+     *
+     * @param  [type] $data     操作数据
+     * @param  [type] $where    where条件，存在则为更新，反之新增
+     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @return [type] [description]
+     */
+    public function all($where = [])
+    {
+        if(!$this->getModel())
+        {
+            throw new MondbException(
+                'The instance is not bound to the Model!', 
+                MondbException::QUERY_MODEL_NOT_BIND);
+        }
+        if(!method_exists($this->getModel(), 'all'))
+        {
+            throw new MondbException(
+                'The model not support autocomplete of all!',
+                MondbException::MODEL_NOT_SUPPORT_ALL
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'all'], [$where, $this]);
     }
 
     /**

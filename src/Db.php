@@ -2,7 +2,7 @@
 namespace mon;
 
 use PDO;
-use mon\lib\Connection;
+use mon\db\Connection;
 use mon\exception\MondbException;
 
 /**
