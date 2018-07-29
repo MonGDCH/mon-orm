@@ -81,14 +81,25 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
 		return $this->model;
 	}
 
+    /**
+     * 是否为空
+     *
+     * @return boolean [description]
+     */
+    public function isEmpty()
+    {
+        return empty($this->data);
+    }
+
 	/**
-	 * 转换为数组输出, 并自动完成数据
-	 *
-	 * @return [type] [description]
-	 */
-	public function toArray()
+     * 转换为数组输出, 并自动完成数据
+     *
+     * @param  boolean $new true则重新获取数据，不读取缓存
+     * @return [type]       [description]
+     */
+	public function toArray($new = true)
 	{
-		if(!$this->formatData)
+		if($new || !$this->formatData)
 		{
             // 转换数据
 			foreach($this->data as $key => $value)

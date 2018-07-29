@@ -286,22 +286,22 @@ class Query
      * 字段自增
      *
      * @param [type]  $field 字段名
-     * @param integer $val   步长
+     * @param integer $step  步长
      */
-    public function setInc($field, $val = 0)
+    public function setInc($field, $step = 1)
     {
-        return $this->update([$field => ['inc', $val]]);
+        return $this->inc($field, $step)->update();
     }
 
     /**
      * 字段自减
      *
      * @param [type]  $field 字段名
-     * @param integer $val   步长
+     * @param integer $step  步长
      */
-    public function setDec($field, $val = 0)
+    public function setDec($field, $step = 1)
     {
-        return $this->update([$field => ['dec', $val]]);
+        return $this->dec($field, $step)->update();
     }
 
     /**
@@ -906,6 +906,30 @@ class Query
     }
 
     /**
+     * 查询lock
+     *
+     * @param bool|string $lock 是否lock
+     * @return $this
+     */
+    public function lock($lock = false)
+    {
+        $this->options['lock']   = $lock;
+        return $this;
+    }
+
+    /**
+     * distinct查询
+     *
+     * @param string $distinct 是否唯一
+     * @return $this
+     */
+    public function distinct($distinct)
+    {
+        $this->options['distinct'] = $distinct;
+        return $this;
+    }
+
+    /**
      * 字段值增长
      *
      * @param string|array $field 字段名
@@ -1015,7 +1039,7 @@ class Query
                 }
             } elseif ($field && is_string($field)) {
                 // 字符串查询
-                $where[$field]                            = ['null', ''];
+                $where[$field] = ['null', ''];
                 $this->options['multi'][$logic][$field][] = $where[$field];
             }
         } 
@@ -1118,7 +1142,7 @@ class Query
 
     /**
      * 获取数据库的配置参数
-     * @access public
+     *
      * @param string $name 参数名称
      * @return boolean
      */
@@ -1155,7 +1179,7 @@ class Query
             $options['data'] = [];
         }
 
-        foreach (['master', 'lock', 'fetch_pdo', 'fetch_sql', 'distinct'] as $name) {
+        foreach (['lock', 'distinct'] as $name) {
             if (!isset($options[$name])) {
                 $options[$name] = false;
             }

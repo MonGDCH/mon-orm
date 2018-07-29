@@ -99,6 +99,17 @@ class Test extends Model
 	}
 
 	/**
+	 * 自动完成格式化补全test字段的数据
+	 * @param  [type] $val [description]
+	 * @param  [type] $row [description]
+	 * @return [type]      [description]
+	 */
+	protected function getTestAttr($val, $row){
+		var_dump($val, $row);
+		return 'test';
+	}
+
+	/**
 	 * 测试查询场景
 	 *
 	 * @return [type] [description]
@@ -124,7 +135,7 @@ class Test extends Model
 $test = new Test;
 
 // 新增
-// $data = $test->save(['name' => mt_rand(1, 100)]);
+// $data = $test->save(['name' => mt_rand(1, 100), 'update_time' => 123456]);
 // $data = $test->save(['name' => 'get insert id'], null, 'id');
 
 // 修改
@@ -136,28 +147,17 @@ $test = new Test;
 
 // 查询
 // $data =  $test->get(['id' => ['>', 52]]);
-// $data = $test->scope('test')->get();
+$data = $test->scope('test')->get();
 
 // $data = $test->all(['status' => 1]);
-$data = $test->scope('test')->where('id', 20)->all();
+// $data = $test->scope('test')->all();
 
-// var_dump($data['create_time']);
+var_dump($data->toArray());
+$data->test = 123;
+var_dump($data->getdata(), $data->toArray());
 
-// var_dump(json_encode($data));
-// var_dump($data->toJson);
-// echo $data;
-
-// $data[1]['name'] = 'tests';
-
-var_dump(!$data->getData());
-// var_dump($data);
-
-
-// foreach($data as $k => $v){
-// 	var_dump($k, $v);
-// }
-
-// echo count($data);
-// var_dump($data['create_time']);
 
 // var_dump($data, $test->getLastSql());
+
+// var_dump($data->isEmpty(), $data->toArray(), $test->getLastSql());
+

@@ -44,6 +44,16 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
 		return $this->data;
 	}
 
+    /**
+     * 是否为空
+     *
+     * @return boolean [description]
+     */
+    public function isEmpty()
+    {
+        return empty($this->data);
+    }
+
 	/**
 	 * 转换为数组输出, 并自动完成数据
 	 *
