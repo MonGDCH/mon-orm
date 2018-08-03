@@ -930,6 +930,51 @@ class Query
     }
 
     /**
+     * 查询 union
+     *
+     * @param mixed   $union
+     * @param boolean $all
+     * @return $this
+     */
+    public function union($union, $all = false)
+    {
+        $this->options['union']['type'] = $all ? 'UNION ALL' : 'UNION';
+
+        if (is_array($union)) {
+            $this->options['union'] = array_merge($this->options['union'], $union);
+        } else {
+            $this->options['union'][] = $union;
+        }
+        return $this;
+    }
+
+    /**
+     * 指定强制索引
+     *
+     * @param string $force 索引名称
+     * @return $this
+     */
+    public function force($force)
+    {
+        $this->options['force'] = $force;
+
+        return $this;
+    }
+
+    /**
+     * 查询注释
+     *
+     * @param string $comment 注释
+     * @return $this
+     */
+    public function comment($comment)
+    {
+        $this->options['comment'] = $comment;
+
+        return $this;
+    }
+
+    /**
      * 字段值增长
      *
      * @param string|array $field 字段名

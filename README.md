@@ -217,6 +217,7 @@ $data = $test->scope('test')->where('id', 20)->all();
 * 优化自动完成设置器及获取器
 * 优化代码结构，修复lock查询无效的问题
 * 优化模型scope方法。支持传参
+* 优化Query类查询方法
 
 ---
 
