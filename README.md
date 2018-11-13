@@ -219,6 +219,10 @@ $data = $test->scope('test')->where('id', 20)->all();
 * 优化模型scope方法。支持传参
 * 优化Query类查询方法
 
+### 2.0.2
+
+* 修复批量写入insertAll写入BUG
+
 ---
 
 # 致谢
