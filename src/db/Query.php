@@ -354,7 +354,7 @@ class Query
             return false;
         }
         // 生成SQL语句
-        $sql = $this->builder->insert($data, $options, $replace);
+        $sql = $this->builder->insertAll($data, $options, $replace);
         // 获取参数绑定
         $bind = $this->getBind();
         // 判断调试模式,返回sql

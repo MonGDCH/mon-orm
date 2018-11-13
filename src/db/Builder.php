@@ -124,7 +124,11 @@ class Builder
 
         foreach ($dataSet as $data) {
             foreach ($data as $key => $val) {
-                if (is_null($val)) {
+                if (is_array($fields) && !in_array($key, $fields)) {
+                    // 过滤掉合法字段外的字段
+                    unset($data[$key]);
+                }
+                else if (is_null($val)) {
                     $data[$key] = 'NULL';
                 } elseif (is_scalar($val)) {
                     $data[$key] = $this->parseValue($val, $key);
@@ -134,15 +138,11 @@ class Builder
                 }
             }
             $value    = array_values($data);
-            $values[] = 'SELECT ' . implode(',', $value);
+            $values[] = '( ' . implode(',', $value) . ' )';
 
             if (!isset($insertFields)) {
                 $insertFields = array_keys($data);
             }
-        }
-
-        foreach ($insertFields as $field) {
-            $fields[] = $this->parseKey($query, $field, true);
         }
 
         return str_replace(
@@ -151,7 +151,7 @@ class Builder
                 $replace ? 'REPLACE' : 'INSERT',
                 $this->parseTable($options['table'], $options),
                 implode(' , ', $insertFields),
-                implode(' UNION ALL ', $values),
+                implode(' , ', $values),
                 $this->parseComment($options['comment']),
             ], $this->insertAllSql);
     }
