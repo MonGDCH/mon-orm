@@ -223,6 +223,10 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 * 修复批量写入insertAll写入BUG
 
+### 2.0.3
+
+* 修复未定义自动处理的字段也自动处理的BUG
+
 ---
 
 # 致谢
