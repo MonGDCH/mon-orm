@@ -258,31 +258,27 @@ abstract class Model
     /**
      * 数据自动完成
      *
+     * @see v2.0.3 修复未定义自动处理的字段也自动处理的BUG
      * @param  array  $auto 自动补全的字段
      * @param  array  $data 数据数据源
      * @return [type]       [description]
      */
     protected function autoCompleteData($auto = [], $data = [])
     {
-        $result = [];
-        // 处理元数据
-        foreach($data as $field => $value){
-            $result[$field] = $this->setAttr($field, $value, $data);
-        }
+        $result = $data;
         // 处理补全数据
-        foreach($auto as $field => $value){
+        foreach($auto as $field => $value)
+        {
             if(is_integer($field)){
                 $field = $value;
                 $value = null;
             }
-            // 未处理过, 自动完成数据字段
-            if(!isset($result[$field])){
-                $result[$field] = $this->setAttr($field, $value, $data);
-            }
+            // 处理数据字段
+            $result[$field] = $this->setAttr($field, $value, $data);
         }
+
         return $result;
     }
-
     /**
      * 检测命名, 转换下划线命名规则为驼峰法命名规则
      *
