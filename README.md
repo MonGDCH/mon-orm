@@ -1,4 +1,4 @@
-# mon-ORM
+# Mon-ORM
 
 基于PHP5.6+，Mysql的便捷式ORM框架，主要实现：
 
