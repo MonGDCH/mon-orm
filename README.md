@@ -17,7 +17,7 @@ composer require mongdch/mon-orm
 ### Db类
 
 ```
-use mon\Db;
+use mon\orm\Db;
 // 基础配置信息
 $config = [
 	'host'     => '127.0.0.1',
@@ -32,7 +32,7 @@ Db::connect($config)->table('test')->select();
 ```
 
 ```
-use mon\Db;
+use mon\orm\Db;
 $config = [
 	'host'     => '127.0.0.1',
 	'database' => 'test',
@@ -50,7 +50,7 @@ Db::getLastSql();
 定义模型
 
 ```
-use mon\Model;
+use mon\orm\Model;
 class Test extends Model
 {
 	/**
@@ -227,11 +227,17 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 * 修复未定义自动处理的字段也自动处理的BUG
 
+### 2.1.0
+
+* 修复Connection对象getError方法与Model对象getError方法重名的BUG, 获取Connection::getError方法改为getQueryError
+* 调整命名空间，改为mon\orm
+* 优化代码结构
+
 ---
 
 # 致谢
 
-感谢您的支持和阅读，如果有什么不足的地方或者建议还请@我，如果你觉得对你有帮助的话还请给个star。 ^_^
+感谢您的支持和阅读，如果有什么不足的地方或者建议还请@我，如果你觉得对你有帮助的话还请给个star。
 
 ---
 

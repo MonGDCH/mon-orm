@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use mon\Model;
+use mon\orm\Model;
 
 
 // 模型用法

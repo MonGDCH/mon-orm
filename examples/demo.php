@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use mon\Db;
+use mon\orm\Db;
 
 $config = [
 	'database' => 'test',

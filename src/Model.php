@@ -1,10 +1,11 @@
 <?php
-namespace mon;
+namespace mon\orm;
 
-use mon\Db;
-use mon\model\Data;
-use mon\model\DataCollection;
-use mon\exception\MondbException;
+use Closure;
+use mon\orm\Db;
+use mon\orm\model\Data;
+use mon\orm\model\DataCollection;
+use mon\orm\exception\MondbException;
 
 /**
 * 模型基类
@@ -101,7 +102,7 @@ abstract class Model
         // 固定第一个参数为Db实例
         array_unshift($args, $this->db());
 
-        if($name instanceof \Closure){
+        if($name instanceof Closure){
             return call_user_func_array($name, $args);
         }
         $method = 'scope' . ucfirst($name);

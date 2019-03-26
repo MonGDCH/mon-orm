@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use mon\Model;
+use mon\orm\Model;
 date_default_timezone_set('PRC');
 
 class Test extends Model

@@ -1,8 +1,8 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use mon\Db;
-use mon\Model;
+use mon\orm\Db;
+use mon\orm\Model;
 date_default_timezone_set('PRC');
 
 $config = [
@@ -22,7 +22,7 @@ Db::setConfig($config);
 
 class Test extends Model
 {
-	protected $table = 'test';
+	protected $table = 'mon_admin';
 
 	/**
 	 * 查询场景传参
@@ -41,15 +41,15 @@ class Test extends Model
 $test = new Test();
 
 try{
-// scope参数传递
-// $data = $test->scope('args', 51)->select();
-$data = $test->scope('args', 60, 1)->select();
+	// scope参数传递
+	// $data = $test->scope('args', 51)->select();
+	$data = $test->scope('args', 1, 1)->select();
 
-// scope不存在，抛出异常
-// $data = $test->scope('argss', 60, 1)->select();
+	// scope不存在，抛出异常
+	// $data = $test->scope('argss', 60, 1)->select();
 
-var_dump($data, $test->getLastSql());
-}catch(\mon\exception\MondbException $e){
+	var_dump($data, $test->getLastSql());
+}catch(\mon\orm\exception\MondbException $e){
 	var_dump($e->getMessage());
 	var_dump($e->getCode());
 }

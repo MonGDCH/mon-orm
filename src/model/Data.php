@@ -1,13 +1,13 @@
 <?php
-namespace mon\model;
+namespace mon\orm\model;
 
-use mon\Model;
 use Countable;
 use ArrayAccess;
 use ArrayIterator;
 use JsonSerializable;
 use IteratorAggregate;
-use mon\model\DataCollection;
+use mon\orm\Model;
+use mon\orm\model\DataCollection;
 
 /**
  * 模型数据结果集(一维数组)

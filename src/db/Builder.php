@@ -1,7 +1,7 @@
 <?php
-namespace mon\db;
+namespace mon\orm\db;
 
-use mon\exception\MondbException;
+use mon\orm\exception\MondbException;
 
 /**
 * 查询语句构造对象

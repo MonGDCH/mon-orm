@@ -1,9 +1,9 @@
 <?php
-namespace mon;
+namespace mon\orm;
 
 use PDO;
-use mon\db\Connection;
-use mon\exception\MondbException;
+use mon\orm\db\Connection;
+use mon\orm\exception\MondbException;
 
 /**
 * DB操作类

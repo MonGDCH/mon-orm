@@ -1,13 +1,13 @@
 <?php
-namespace mon\db;
+namespace mon\orm\db;
 
 use PDO;
 use Closure;
 use PDOStatement;
-use mon\Model;
-use mon\db\Builder;
-use mon\db\Connection;
-use mon\exception\MondbException;
+use mon\orm\Model;
+use mon\orm\db\Builder;
+use mon\orm\db\Connection;
+use mon\orm\exception\MondbException;
 
 
 /**
@@ -899,7 +899,8 @@ class Query
     {
         if (is_array($field)) {
             $this->options['data'] = isset($this->options['data']) ? array_merge($this->options['data'], $field) : $field;
-        } else {
+        } 
+        else {
             $this->options['data'][$field] = $value;
         }
         return $this;
@@ -942,7 +943,8 @@ class Query
 
         if (is_array($union)) {
             $this->options['union'] = array_merge($this->options['union'], $union);
-        } else {
+        } 
+        else {
             $this->options['union'][] = $union;
         }
         return $this;
@@ -984,7 +986,8 @@ class Query
     public function inc($field, $step = 1)
     {
         $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach ($fields as $field) {
+        foreach($fields as $field)
+        {
             $this->data($field, ['inc', $step]);
         }
         return $this;
@@ -1000,7 +1003,8 @@ class Query
     public function dec($field, $step = 1)
     {
         $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach ($fields as $field) {
+        foreach($fields as $field)
+        {
             $this->data($field, ['dec', $step]);
         }
         return $this;
@@ -1016,9 +1020,10 @@ class Query
      */
     public function bind($key, $value = false, $type = PDO::PARAM_STR)
     {
-        if (is_array($key)) {
+        if(is_array($key)){
             $this->bind = array_merge($this->bind, $key);
-        } else {
+        } 
+        else{
             $this->bind[$key] = [$value, $type];
         }
         return $this;
@@ -1079,10 +1084,12 @@ class Query
             if (is_array($field)) {
                 // 数组批量查询
                 $where = $field;
-                foreach ($where as $k => $val) {
+                foreach ($where as $k => $val) 
+                {
                     $this->options['multi'][$logic][$k][] = $val;
                 }
-            } elseif ($field && is_string($field)) {
+            } 
+            elseif ($field && is_string($field)) {
                 // 字符串查询
                 $where[$field] = ['null', ''];
                 $this->options['multi'][$logic][$field][] = $where[$field];
@@ -1150,16 +1157,19 @@ class Query
         if (is_array($join)) {
             $table = $join;
             $alias = array_shift($join);
-        } else {
+        } 
+        else {
             $join = trim($join);
             if (false !== strpos($join, '(')) {
                 // 使用子查询
                 $table = $join;
-            } else {
+            } 
+            else {
                 if (strpos($join, ' ')) {
                     // 使用别名
                     list($table, $alias) = explode(' ', $join);
-                } else {
+                } 
+                else {
                     $table = $join;
                     if (false === strpos($join, '.') && 0 !== strpos($join, '__')) {
                         $alias = $join;
@@ -1224,13 +1234,15 @@ class Query
             $options['data'] = [];
         }
 
-        foreach (['lock', 'distinct'] as $name) {
+        foreach(['lock', 'distinct'] as $name) 
+        {
             if (!isset($options[$name])) {
                 $options[$name] = false;
             }
         }
 
-        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment'] as $name) {
+        foreach(['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment'] as $name) 
+        {
             if (!isset($options[$name])) {
                 $options[$name] = '';
             }

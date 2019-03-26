@@ -1,12 +1,12 @@
 <?php
-namespace mon\db;
+namespace mon\orm\db;
 
 use PDO;
 use Exception;
 use Throwable;
 use PDOException;
-use mon\db\Query;
-use mon\exception\MondbException;
+use mon\orm\db\Query;
+use mon\orm\exception\MondbException;
 
 /**
 * 链接DB
@@ -194,7 +194,7 @@ class Connection
      *
      * @return string
      */
-    public function getError()
+    public function getQueryError()
     {
         if ($this->PDOStatement) {
             $error = $this->PDOStatement->errorInfo();
@@ -203,7 +203,7 @@ class Connection
             $error = '';
         }
         if ('' != $this->queryStr) {
-            $error .= "\n [ SQL ] : " . $this->getLastSql();
+            $error .= PHP_EOL . ' [ SQL ] : ' . $this->getLastSql();
         }
         return $error;
     }
@@ -217,8 +217,7 @@ class Connection
 	public function connect(array $config = [])
 	{
 		try{
-            if(!empty($config) && is_array($config))
-            {
+            if(!empty($config) && is_array($config)){
                 $this->config = array_merge($this->config, $config);
             }
 
