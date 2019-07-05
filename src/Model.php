@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\orm;
 
 use Closure;
@@ -8,11 +9,11 @@ use mon\orm\model\DataCollection;
 use mon\orm\exception\MondbException;
 
 /**
-* 模型基类
-*
-* @author Mon 985558837@qq.com
-* @version v1.0
-*/
+ * 模型基类
+ *
+ * @author Mon 985558837@qq.com
+ * @version v1.0
+ */
 abstract class Model
 {
     /**
@@ -25,7 +26,7 @@ abstract class Model
     /**
      * DB配置
      *
-     * @var [type]
+     * @var array
      */
     protected $config = [];
 
@@ -72,18 +73,17 @@ abstract class Model
     /**
      * 获取DB实例
      *
-     * @return [type] [description]
+     * @param boolean $newLink 是否重新创建链接
+     * @return void
      */
     public function db($newLink = false)
     {
-        if(empty($this->config))
-        {
+        if (empty($this->config)) {
             $this->config = Db::getConfig();
         }
         // 获取DB实例
-        $connect =  Db::connect($this->config, $newLink)->model($this);
-        if(!empty($this->table))
-        {
+        $connect =  Db::connect((array) $this->config, $newLink)->model($this);
+        if (!empty($this->table)) {
             $connect = $connect->table($this->table);
         }
 
@@ -102,17 +102,17 @@ abstract class Model
         // 固定第一个参数为Db实例
         array_unshift($args, $this->db());
 
-        if($name instanceof Closure){
+        if ($name instanceof Closure) {
             return call_user_func_array($name, $args);
         }
         $method = 'scope' . ucfirst($name);
-        if(method_exists($this, $method)){
+        if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $args);
         }
         throw new MondbException(
-            'The scope is not found ['.$method.']', 
+            'The scope is not found [' . $method . ']',
             MondbException::SCOPE_NULL_FOUND
-        );  
+        );
     }
 
     /**
@@ -126,9 +126,8 @@ abstract class Model
      */
     public function save($data, $where = null, $sequence = null, $query = null)
     {
-        $result = !is_null($where) ? 
-            $this->updateData($data, $where, $query) : 
-            $this->insertData($data, $sequence, $query);
+        $result = !is_null($where) ?
+            $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
 
         return $result;
     }
@@ -143,7 +142,7 @@ abstract class Model
     public function get($where = [], $db = null)
     {
         // 获取DB链接
-        if(!$db){
+        if (!$db) {
             $db = $this->db();
         }
         $data = $db->where($where)->find();
@@ -161,18 +160,18 @@ abstract class Model
     public function all($where = [], $db = null)
     {
         // 获取DB链接
-        if(!$db){
+        if (!$db) {
             $db = $this->db();
         }
         $data = $db->where($where)->select();
         // 有数据，生成数据集合
-        if(count($data) > 0){
+        if (count($data) > 0) {
             // 遍历转换生成对象集合
-            foreach($data as $k => &$v){
+            foreach ($data as $k => &$v) {
                 $v = new Data($v, $this, $this->append);
             }
             $data = new DataCollection($data);
-        }else{
+        } else {
             $data = new DataCollection($data);
         }
 
@@ -191,7 +190,7 @@ abstract class Model
         // 自动完成
         $updateData = $this->autoCompleteData($this->update, $data);
         // 获取DB链接
-        if(!$db){
+        if (!$db) {
             $db = $this->db();
         }
 
@@ -210,7 +209,7 @@ abstract class Model
         // 自动完成
         $insertData = $this->autoCompleteData($this->insert, $data);
         // 获取DB链接
-        if(!$db){
+        if (!$db) {
             $db = $this->db();
         }
 
@@ -229,9 +228,8 @@ abstract class Model
     public function setAttr($name, $value = null, $data = [])
     {
         // 检测设置器是否存在
-        $method = 'set'.$this->parseAttrName($name).'Attr';
-        if(method_exists($this, $method))
-        {
+        $method = 'set' . $this->parseAttrName($name) . 'Attr';
+        if (method_exists($this, $method)) {
             $value = $this->$method($value, $data);
         }
         return $value;
@@ -247,9 +245,8 @@ abstract class Model
     public function getAttr($name, $value = null, $data = [])
     {
         // 检测设置器是否存在
-        $method = 'get'.$this->parseAttrName($name).'Attr';
-        if(method_exists($this, $method))
-        {
+        $method = 'get' . $this->parseAttrName($name) . 'Attr';
+        if (method_exists($this, $method)) {
             $value = $this->$method($value, $data);
         }
 
@@ -268,9 +265,8 @@ abstract class Model
     {
         $result = $data;
         // 处理补全数据
-        foreach($auto as $field => $value)
-        {
-            if(is_integer($field)){
+        foreach ($auto as $field => $value) {
+            if (is_integer($field)) {
                 $field = $value;
                 $value = null;
             }
@@ -289,32 +285,32 @@ abstract class Model
     protected function parseAttrName($name)
     {
         $name = preg_replace_callback('/_([a-zA-Z])/', function ($match) {
-                return strtoupper($match[1]);
-            }, $name);
+            return strtoupper($match[1]);
+        }, $name);
         return ucfirst($name);
     }
 
     /**
      * 动态调用
      * 
-     * @param  [type] $method [description]
-     * @param  [type] $args   [description]
+     * @param  [type] $method 回调方法
+     * @param  [type] $args   参数
      * @return [type]         [description]
      */
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->db(), $method], $args);
+        return call_user_func_array([$this->db(), $method], (array) $args);
     }
 
     /**
      * 静态调用
      *
-     * @param  [type] $method [description]
-     * @param  [type] $args   [description]
+     * @param  [type] $method 回调方法
+     * @param  [type] $args   参数
      * @return [type]         [description]
      */
     public static function __callStatic($method, $args)
     {
-        return call_user_func_array([(new static())->db(), $method], $args);
+        return call_user_func_array([(new static())->db(), $method], (array) $args);
     }
 }

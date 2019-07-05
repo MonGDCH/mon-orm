@@ -194,22 +194,24 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
-### 1.0.2
+### 2.1.1
 
-* 增加setInc,setDec字段自增自减查询方法
-* 修复find查询下debug方法无效的bug，优化闭包查询。
+* 优化代码
+* 增加DB类的事件绑定，分别对应select、update、insert、delete事件
 
-### 1.0.3
+### 2.1.0
 
-* 修正count，svg, sum等方法无法使用debug获取查询语句
+* 修复Connection对象getError方法与Model对象getError方法重名的BUG, 获取Connection::getError方法改为getQueryError
+* 调整命名空间，改为mon\orm
 * 优化代码结构
 
-### 2.0.0
+### 2.0.3
 
-* 优化事务支持
-* 增强模型对象，增加save、get、all、scope等模型方法
-* 增强模型功能，增加设置器、获取器的功能
-* 优化查询结果集
+* 修复未定义自动处理的字段也自动处理的BUG
+
+### 2.0.2
+
+* 修复批量写入insertAll写入BUG
 
 ### 2.0.1
 
@@ -219,19 +221,23 @@ $data = $test->scope('test')->where('id', 20)->all();
 * 优化模型scope方法。支持传参
 * 优化Query类查询方法
 
-### 2.0.2
+### 2.0.0
 
-* 修复批量写入insertAll写入BUG
+* 优化事务支持
+* 增强模型对象，增加save、get、all、scope等模型方法
+* 增强模型功能，增加设置器、获取器的功能
+* 优化查询结果集
 
-### 2.0.3
+### 1.0.3
 
-* 修复未定义自动处理的字段也自动处理的BUG
-
-### 2.1.0
-
-* 修复Connection对象getError方法与Model对象getError方法重名的BUG, 获取Connection::getError方法改为getQueryError
-* 调整命名空间，改为mon\orm
+* 修正count，svg, sum等方法无法使用debug获取查询语句
 * 优化代码结构
+
+
+### 1.0.2
+
+* 增加setInc,setDec字段自增自减查询方法
+* 修复find查询下debug方法无效的bug，优化闭包查询。
 
 ---
 

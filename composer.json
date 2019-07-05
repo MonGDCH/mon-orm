@@ -1,7 +1,7 @@
 {
     "name": "mongdch/mon-orm",
     "description": "the php mysql orm",
-    "version": "v2.1.0",
+    "version": "v2.1.1",
     "keywords": [
     	"mysql",
     	"mon",
@@ -16,7 +16,8 @@
         }
     ],
     "require": {
-        "php": ">=5.6.0"
+        "php": ">=5.6.0",
+        "mongdch/mon-container": "^1.0"
     },
     "autoload": {
         "psr-4": {

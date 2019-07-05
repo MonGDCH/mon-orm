@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\orm\model;
 
 use Countable;
@@ -17,19 +18,19 @@ use mon\orm\model\DataCollection;
  */
 class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregate
 {
-	/**
-	 * 元数据
-	 *
-	 * @var [type]
-	 */
-	protected $data;
+    /**
+     * 元数据
+     *
+     * @var array
+     */
+    protected $data;
 
-	/**
-	 * 绑定的模型
-	 *
-	 * @var [type]
-	 */
-	protected $model;
+    /**
+     * 绑定的模型
+     *
+     * @var [type]
+     */
+    protected $model;
 
     /**
      * 补充的数据字段
@@ -38,48 +39,49 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
      */
     protected $append;
 
-	/**
-	 * 处理后的数据
-	 *
-	 * @var [type]
-	 */
-	protected $formatData;
+    /**
+     * 处理后的数据
+     *
+     * @var [type]
+     */
+    protected $formatData;
 
-	/**
-	 * 构造方法
-	 *
-	 * @param [type] $data  结果集
-	 * @param Model  $model 绑定的模型
-	 */
-	public function __construct($data, Model $model, $append = [])
-	{
-		$this->data = $data;
-		$this->model = $model;
+    /**
+     * 构造方法
+     *
+     * @param [type] $data  结果集
+     * @param Model  $model 绑定的模型
+     */
+    public function __construct($data, Model $model, $append = [])
+    {
+        $this->data = $data;
+        $this->model = $model;
         $this->append = $append;
-	}
+    }
 
-	/**
-	 * 获取元数据
-	 *
-	 * @return [type] [description]
-	 */
-	public function getData($name = null)
-	{
-		if(!is_null($name)){
-			return isset($this->data[$name]) ? $this->data[$name] : null;
-		}
-		return $this->data;
-	}
+    /**
+     * 获取元数据
+     *
+     * @param [type] $name 字段名
+     * @return void
+     */
+    public function getData($name = null)
+    {
+        if (!is_null($name)) {
+            return isset($this->data[$name]) ? $this->data[$name] : null;
+        }
+        return $this->data;
+    }
 
-	/**
-	 * 获取绑定的模型
-	 *
-	 * @return [type] [description]
-	 */
-	public function getModel()
-	{
-		return $this->model;
-	}
+    /**
+     * 获取绑定的模型
+     *
+     * @return [type] [description]
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
 
     /**
      * 是否为空
@@ -91,43 +93,40 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
         return empty($this->data);
     }
 
-	/**
+    /**
      * 转换为数组输出, 并自动完成数据
      *
      * @param  boolean $new true则重新获取数据，不读取缓存
      * @return [type]       [description]
      */
-	public function toArray($new = true)
-	{
-		if($new || !$this->formatData)
-		{
+    public function toArray($new = true)
+    {
+        if ($new || !$this->formatData) {
             // 转换数据
-			foreach($this->data as $key => $value)
-			{
-				if($value instanceof self || $value instanceof DataCollection){
-					$this->formatData[$key] = $value->toArray();
-				}else{
-					$this->formatData[$key] = $this->model->getAttr($key, $value, $this->data);
-				}
-			}
+            foreach ($this->data as $key => $value) {
+                if ($value instanceof self || $value instanceof DataCollection) {
+                    $this->formatData[$key] = $value->toArray();
+                } else {
+                    $this->formatData[$key] = $this->model->getAttr($key, $value, $this->data);
+                }
+            }
 
             // 存在附加字段
-            if(!empty($this->append)){
-                foreach($this->append as $field => $val){
-                    if(is_integer($field)){
+            if (!empty($this->append)) {
+                foreach ($this->append as $field => $val) {
+                    if (is_integer($field)) {
                         $field = $val;
                         $val = null;
                     }
                     $this->formatData[$field] = $this->model->getAttr($field, $val, $this->data);
                 }
             }
+        }
 
-		}
+        return $this->formatData;
+    }
 
-		return $this->formatData;
-	}
-
-	/**
+    /**
      * 转换为json数据
      *
      * @param integer $options json参数
@@ -138,7 +137,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
         return json_encode($this->toArray(), $options);
     }
 
-	/**
+    /**
      * 修改器,设置数据对象的值
      *
      * @param string $name  名称
@@ -148,8 +147,8 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     public function __set($name, $value)
     {
         $this->data[$name] = $value;
-        if($this->formatData){
-        	$this->formatData[$name] = $value;
+        if ($this->formatData) {
+            $this->formatData[$name] = $value;
         }
     }
 
@@ -164,7 +163,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
         return $this->model->getAttr($name, $this->getData($name), $this->data);
     }
 
-	/**
+    /**
      * 检测数据对象的值
      *
      * @param string $name 名称
@@ -196,7 +195,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
         unset($this->data[$name], $this->formatData[$name]);
     }
 
-	// ArrayAccess相关处理方法
+    // ArrayAccess相关处理方法
     public function offsetSet($name, $value)
     {
         $this->__set($name, $value);

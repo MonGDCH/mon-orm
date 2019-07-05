@@ -1,14 +1,15 @@
 <?php
+
 namespace mon\orm\exception;
 
 use Exception;
 
 /**
-* MonDb自定义异常
-*
-* @author Mon <985558837@qq.com>
-* @version v1.0
-*/
+ * MonDb自定义异常
+ *
+ * @author Mon <985558837@qq.com>
+ * @version v1.0
+ */
 class MondbException extends Exception
 {
 	/**
@@ -20,6 +21,11 @@ class MondbException extends Exception
 	 * 查询条件为空
 	 */
 	const WHERE_IS_NULL = 10110;
+
+	/**
+	 * 查询语句为空
+	 */
+	const SQL_IS_NULL = 10120;
 
 	/**
 	 * DB类型不支持

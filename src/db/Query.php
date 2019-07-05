@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\orm\db;
 
 use PDO;
@@ -8,31 +9,31 @@ use mon\orm\Model;
 use mon\orm\db\Builder;
 use mon\orm\db\Connection;
 use mon\orm\exception\MondbException;
-
+use mon\factory\Container;
 
 /**
-* 查询构造器
-*
-* @author Mon 985558837@qq.com
-* @version v1.0
-*/
+ * 查询构造器
+ *
+ * @author Mon 985558837@qq.com
+ * @version v1.0
+ */
 class Query
 {
-	/**
-	 * DB链接实例
-	 *
-	 * @var null
-	 */
-	protected $connection = null;
+    /**
+     * DB链接实例
+     *
+     * @var null
+     */
+    protected $connection = null;
 
-	/**
-	 * SQL构造实例
-	 *
-	 * @var null
-	 */
-	protected $builder = null;
+    /**
+     * SQL构造实例
+     *
+     * @var null
+     */
+    protected $builder = null;
 
-	/**
+    /**
      * 查询表
      *
      * @var [type]
@@ -60,16 +61,35 @@ class Query
      */
     protected $model;
 
-	/**
-	 * 构造方法
-	 *
-	 * @param Connection $connection [description]
-	 */
-	public function __construct(Connection $connection)
-	{
-		$this->connection = $connection;
-		$this->builder = $this->getBuilder();
-	}
+    /**
+     * 查询事件
+     *
+     * @var array
+     */
+    private static $event = [];
+
+    /**
+     * 构造方法
+     *
+     * @param Connection $connection 链接实例
+     */
+    public function __construct(Connection $connection)
+    {
+        $this->connection = $connection;
+        $this->builder = $this->getBuilder();
+    }
+
+    /**
+     * 注册回调方法
+     *
+     * @param string   $event    事件名
+     * @param callable $callback 回调方法
+     * @return void
+     */
+    public static function event($event, $callback)
+    {
+        self::$event[$event] = $callback;
+    }
 
     /**
      * 指定模型
@@ -93,29 +113,29 @@ class Query
         return $this->model;
     }
 
-	/**
-	 * 获取当前的查询参数
-	 *
-	 * @param  [type] $name 参数名称
-	 * @return [type]       [description]
-	 */
-	public function getOptions($name = '')
-	{
-		if ('' === $name) {
+    /**
+     * 获取当前的查询参数
+     *
+     * @param  [type] $name 参数名称
+     * @return [type]       [description]
+     */
+    public function getOptions($name = '')
+    {
+        if ('' === $name) {
             return $this->options;
         } else {
             return isset($this->options[$name]) ? $this->options[$name] : null;
         }
-	}
+    }
 
-	/**
+    /**
      * 执行查询 返回数据集
      *
      * @param string      $sql    sql指令
      * @param array       $bind   参数绑定
      * @param bool|string $class  指定返回的数据集对象
      */
-	public function query($sql, $bind = [], $class = false)
+    public function query($sql, $bind = [], $class = false)
     {
         return $this->connection->query($sql, $bind, $class);
     }
@@ -185,102 +205,109 @@ class Query
     /**
      * 事务处理，采用回调函数实现
      *
-     * @param  [type] $callback [description]
+     * @param  [type] $callback 回调函数
      * @return [type]           [description]
      */
     public function action($callback)
     {
-        if($callback instanceof Closure){
-        	// 开启事务
+        if ($callback instanceof Closure) {
+            // 开启事务
             $this->startTrans();
 
             // 执行匿名回调
             $result = call_user_func($callback, $this);
-            if($result === false){
+            if ($result === false) {
                 $this->rollback();
-            }else{
+            } else {
                 $this->commit();
             }
             return $result;
-        }else{
+        } else {
             return false;
         }
     }
 
-	/**
-	 * 查询数据
-	 *
-	 * @return [type] [description]
-	 */
-	public function select()
-	{    
-		$options = $this->parseExpress();
+    /**
+     * 查询数据
+     *
+     * @return [type] [description]
+     */
+    public function select()
+    {
+        $options = $this->parseExpress();
 
-		// 生成sql
-		$sql = $this->builder->select($options);
-		// 获取绑定值
-		$bind = $this->getBind();
-		// 判断调试模式,返回sql
-		if(isset($options['debug']) && $options['debug'])
-        {
+        // 生成sql
+        $sql = $this->builder->select($options);
+        // 获取绑定值
+        $bind = $this->getBind();
+        // 判断调试模式,返回sql
+        if (isset($options['debug']) && $options['debug']) {
             return $this->connection->getRealSql($sql, $bind);
         }
         $obj = (isset($options['obj']) && $options['obj']);
 
-		return $this->query($sql, $bind, $obj);
-	}
+        $result = $this->query($sql, $bind, $obj);
 
-	/**
-	 * 查找单条记录
-	 *
-	 * @return [type] [description]
-	 */
-	public function find()
-	{
-		$result = $this->limit(1)->select();
-		if($result instanceof PDOStatement || is_string($result))
-        {
+        // 触发查询事件
+        $this->trigger('select', $options);
+
+        return $result;
+    }
+
+    /**
+     * 查找单条记录
+     *
+     * @return [type] [description]
+     */
+    public function find()
+    {
+        $result = $this->limit(1)->select();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
             return $result;
         }
 
         return isset($result[0]) ? $result[0] : [];
-	}
+    }
 
-	/**
-	 * 更新查询
-	 *
-	 * @param  array  $data 更新的数据
-	 * @return [type]       [description]
-	 */
-	public function update(array $data = [])
-	{
-		$options = $this->parseExpress();
-        if(empty($options['where']))
-        {
+    /**
+     * 更新查询
+     *
+     * @param  array  $data 更新的数据
+     * @return [type]       [description]
+     */
+    public function update(array $data = [])
+    {
+        $options = $this->parseExpress();
+        if (empty($options['where'])) {
             // 更新操作，查询条件不能为空
             throw new MondbException(
                 "The update operation query condition cannot be empty!",
                 MondbException::WHERE_IS_NULL
             );
         }
-		$data = array_merge($options['data'], $data);
+        $data = array_merge($options['data'], $data);
         // 生成sql
         $sql = $this->builder->update($data, $options);
         // $data未空，生成空sql语句
-        if($sql == '')
-        {
-            return 0;
+        if ($sql == '') {
+            throw new MondbException(
+                "The generated query statement is empty!",
+                MondbException::SQL_IS_NULL
+            );
         }
         // 获取绑定值
         $bind = $this->getBind();
         // 判断调试模式,返回sql
-        if(isset($options['debug']) && $options['debug'])
-        {
+        if (isset($options['debug']) && $options['debug']) {
             return $this->connection->getRealSql($sql, $bind);
         }
-        return $this->execute($sql, $bind);
-	}
+        $result = $this->execute($sql, $bind);
+        // 触发更新事件
+        $this->trigger('update', $options);
+
+        return $result;
+    }
 
     /**
      * 字段自增
@@ -322,16 +349,18 @@ class Query
         // 获取参数绑定
         $bind = $this->getBind();
         // 判断调试模式,返回sql
-        if(isset($options['debug']) && $options['debug'])
-        {
+        if (isset($options['debug']) && $options['debug']) {
             return $this->connection->getRealSql($sql, $bind);
         }
 
         // 执行操作
         $result = (false === $sql) ? fasle : $this->execute($sql, $bind);
+
+        // 触发写入事件
+        $this->trigger('insert', $options);
+
         // 执行成功，判断是否返回自增ID
-        if($result && $getLastInsID)
-        {
+        if ($result && $getLastInsID) {
             return $this->getLastInsID($key);
         }
 
@@ -348,8 +377,7 @@ class Query
     public function insertAll(array $data = [], $replace = false)
     {
         $options = $this->parseExpress();
-        if(!is_array($data))
-        {
+        if (!is_array($data)) {
             // 批量操作, 必须通过insertAll方法传递数组数据
             return false;
         }
@@ -358,12 +386,13 @@ class Query
         // 获取参数绑定
         $bind = $this->getBind();
         // 判断调试模式,返回sql
-        if(isset($options['debug']) && $options['debug'])
-        {
+        if (isset($options['debug']) && $options['debug']) {
             return $this->connection->getRealSql($sql, $bind);
         }
-
-        return $this->execute($sql, $bind);
+        // 执行SQL
+        $result = $this->execute($sql, $bind);
+        // 触发写入事件
+        $this->trigger('insert', $options);
     }
 
     /**
@@ -374,8 +403,7 @@ class Query
     public function delete()
     {
         $options = $this->parseExpress();
-        if(empty($options['where']))
-        {
+        if (empty($options['where'])) {
             // 操作操作，查询条件不能为空
             throw new MondbException(
                 "The delete operation query condition cannot be empty!",
@@ -387,12 +415,15 @@ class Query
         // 获取参数绑定
         $bind = $this->getBind();
         // 判断调试模式,返回sql
-        if(isset($options['debug']) && $options['debug'])
-        {
+        if (isset($options['debug']) && $options['debug']) {
             return $this->connection->getRealSql($sql, $bind);
         }
+        // 执行SQL
+        $result = $this->execute($sql, $bind);
+        // 触发删除事件
+        $this->trigger('delete', $options);
 
-        return $this->execute($sql, $bind);
+        return $result;
     }
 
     /**
@@ -403,9 +434,8 @@ class Query
      */
     public function count($field = '*')
     {
-        $res = $this->field('COUNT('.$field.') AS mondb_count')->find();
-        if($res instanceof PDOStatement || is_string($res))
-        {
+        $res = $this->field('COUNT(' . $field . ') AS mondb_count')->find();
+        if ($res instanceof PDOStatement || is_string($res)) {
             // 返回PDOStatement对象或者查询语句
             return $res;
         }
@@ -421,9 +451,8 @@ class Query
      */
     public function sum($field)
     {
-        $res = $this->field('SUM('.$field.') AS mondb_sum')->find();
-        if($res instanceof PDOStatement || is_string($res))
-        {
+        $res = $this->field('SUM(' . $field . ') AS mondb_sum')->find();
+        if ($res instanceof PDOStatement || is_string($res)) {
             // 返回PDOStatement对象或者查询语句
             return $res;
         }
@@ -439,9 +468,8 @@ class Query
      */
     public function min($field)
     {
-        $res = $this->field('MIN('.$field.') AS mondb_min')->find();
-        if($res instanceof PDOStatement || is_string($res))
-        {
+        $res = $this->field('MIN(' . $field . ') AS mondb_min')->find();
+        if ($res instanceof PDOStatement || is_string($res)) {
             // 返回PDOStatement对象或者查询语句
             return $res;
         }
@@ -457,9 +485,8 @@ class Query
      */
     public function max($field)
     {
-        $res = $this->field('MAX('.$field.') AS mondb_max')->find();
-        if($res instanceof PDOStatement || is_string($res))
-        {
+        $res = $this->field('MAX(' . $field . ') AS mondb_max')->find();
+        if ($res instanceof PDOStatement || is_string($res)) {
             // 返回PDOStatement对象或者查询语句
             return $res;
         }
@@ -475,9 +502,8 @@ class Query
      */
     public function avg($field)
     {
-        $res = $this->field('AVG('.$field.') AS mondb_avg')->find();
-        if($res instanceof PDOStatement || is_string($res))
-        {
+        $res = $this->field('AVG(' . $field . ') AS mondb_avg')->find();
+        if ($res instanceof PDOStatement || is_string($res)) {
             // 返回PDOStatement对象或者查询语句
             return $res;
         }
@@ -485,29 +511,29 @@ class Query
         return isset($res['mondb_avg']) ? $res['mondb_avg'] : false;
     }
 
-	/**
-	 * 调试模式,只返回SQL
-	 *
-	 * @return [type] [description]
-	 */
-	public function debug()
-	{
-		$this->options['debug'] = true;
-		return $this;
-	}
+    /**
+     * 调试模式,只返回SQL
+     *
+     * @return [type] [description]
+     */
+    public function debug()
+    {
+        $this->options['debug'] = true;
+        return $this;
+    }
 
-	/**
-	 * 获取PDO结果集,不解析
-	 *
-	 * @return [type] [description]
-	 */
-	public function getObj()
-	{
-		$this->options['obj'] = true;
-		return $this;
-	}
+    /**
+     * 获取PDO结果集,不解析
+     *
+     * @return [type] [description]
+     */
+    public function getObj()
+    {
+        $this->options['obj'] = true;
+        return $this;
+    }
 
-	/**
+    /**
      * 设置表名(含表前缀)
      *
      * @param  [type] $table 表名
@@ -518,10 +544,8 @@ class Query
         if (is_string($table)) {
             if (strpos($table, ')')) {
                 // 子查询
-            }
-            elseif (strpos($table, ','))
-            {
-            	// 多表
+            } elseif (strpos($table, ',')) {
+                // 多表
                 $tables = explode(',', $table);
                 $table  = [];
                 foreach ($tables as $item) {
@@ -533,9 +557,7 @@ class Query
                         $table[] = $item;
                     }
                 }
-            }
-            elseif(strpos($table, ' '))
-            {
+            } elseif (strpos($table, ' ')) {
                 list($table, $alias) = explode(' ', $table);
 
                 $table = [$table => $alias];
@@ -603,11 +625,10 @@ class Query
      */
     public function limit($offset, $length = null)
     {
-        if(is_null($length) && strpos($offset, ','))
-        {
+        if (is_null($length) && strpos($offset, ',')) {
             list($offset, $length) = explode(',', $offset);
         }
-        $this->options['limit'] = intval($offset) . ($length ? ','.intval($length) : '');
+        $this->options['limit'] = intval($offset) . ($length ? ',' . intval($length) : '');
 
         return $this;
     }
@@ -621,30 +642,21 @@ class Query
      */
     public function order($field, $order = '')
     {
-        if(!empty($field))
-        {
-            if(is_string($field))
-            {
-                if(strpos($field, ','))
-                {
+        if (!empty($field)) {
+            if (is_string($field)) {
+                if (strpos($field, ',')) {
                     $field = array_map('trim', explode(',', $field));
-                }
-                else
-                {
+                } else {
                     $field = empty($order) ? $field : [$field => $order];
                 }
             }
 
-            if(!isset($this->options['order']))
-            {
+            if (!isset($this->options['order'])) {
                 $this->options['order'] = [];
             }
-            if(is_array($field))
-            {
+            if (is_array($field)) {
                 $this->options['order'] = array_merge($this->options['order'], $field);
-            }
-            else
-            {
+            } else {
                 $this->options['order'][] = $field;
             }
         }
@@ -655,7 +667,6 @@ class Query
     /**
      * 指定group查询
      *
-     * @access public
      * @param string $group GROUP
      * @return $this
      */
@@ -668,7 +679,6 @@ class Query
     /**
      * 指定having查询
      *
-     * @access public
      * @param string $having having
      * @return $this
      */
@@ -768,7 +778,7 @@ class Query
 
     /**
      * 指定NotLike查询条件
-     * @access public
+     *
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
@@ -782,7 +792,7 @@ class Query
 
     /**
      * 指定Between查询条件
-     * @access public
+     *
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
@@ -796,7 +806,7 @@ class Query
 
     /**
      * 指定NotBetween查询条件
-     * @access public
+     *
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
@@ -899,8 +909,7 @@ class Query
     {
         if (is_array($field)) {
             $this->options['data'] = isset($this->options['data']) ? array_merge($this->options['data'], $field) : $field;
-        } 
-        else {
+        } else {
             $this->options['data'][$field] = $value;
         }
         return $this;
@@ -943,8 +952,7 @@ class Query
 
         if (is_array($union)) {
             $this->options['union'] = array_merge($this->options['union'], $union);
-        } 
-        else {
+        } else {
             $this->options['union'][] = $union;
         }
         return $this;
@@ -986,8 +994,7 @@ class Query
     public function inc($field, $step = 1)
     {
         $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach($fields as $field)
-        {
+        foreach ($fields as $field) {
             $this->data($field, ['inc', $step]);
         }
         return $this;
@@ -1003,8 +1010,7 @@ class Query
     public function dec($field, $step = 1)
     {
         $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach($fields as $field)
-        {
+        foreach ($fields as $field) {
             $this->data($field, ['dec', $step]);
         }
         return $this;
@@ -1020,10 +1026,9 @@ class Query
      */
     public function bind($key, $value = false, $type = PDO::PARAM_STR)
     {
-        if(is_array($key)){
-            $this->bind = array_merge($this->bind, $key);
-        } 
-        else{
+        if (is_array($key)) {
+            $this->bind = array_merge((array) $this->bind, $key);
+        } else {
             $this->bind[$key] = [$value, $type];
         }
         return $this;
@@ -1071,70 +1076,51 @@ class Query
             return;
         }
 
-		if ($strict) 
-		{
+        if ($strict) {
             // 使用严格模式查询
             $where[$field] = [$op, $condition];
 
             // 记录一个字段多次查询条件
             $this->options['multi'][$logic][$field][] = $where[$field];
-        } 
-        elseif (is_null($op) && is_null($condition)) 
-        {
+        } elseif (is_null($op) && is_null($condition)) {
             if (is_array($field)) {
                 // 数组批量查询
                 $where = $field;
-                foreach ($where as $k => $val) 
-                {
+                foreach ($where as $k => $val) {
                     $this->options['multi'][$logic][$k][] = $val;
                 }
-            } 
-            elseif ($field && is_string($field)) {
+            } elseif ($field && is_string($field)) {
                 // 字符串查询
                 $where[$field] = ['null', ''];
                 $this->options['multi'][$logic][$field][] = $where[$field];
             }
-        } 
-        elseif (is_array($op)) 
-        {
+        } elseif (is_array($op)) {
             $where[$field] = $param;
-        } 
-        elseif (in_array(strtolower($op), ['null', 'notnull', 'not null'])) 
-        {
+        } elseif (in_array(strtolower($op), ['null', 'notnull', 'not null'])) {
             // null查询
             $where[$field] = [$op, ''];
 
             $this->options['multi'][$logic][$field][] = $where[$field];
-        } 
-        elseif (is_null($condition)) 
-        {
+        } elseif (is_null($condition)) {
             // 字段相等查询
             $where[$field] = ['=', $op];
 
             $this->options['multi'][$logic][$field][] = $where[$field];
-        }
-        else
-        {
+        } else {
 
             $where[$field] = [$op, $condition];
             // 记录一个字段多次查询条件
             $this->options['multi'][$logic][$field][] = $where[$field];
         }
 
-        if (!empty($where))
-        {
-            if (!isset($this->options['where'][$logic]))
-            {
+        if (!empty($where)) {
+            if (!isset($this->options['where'][$logic])) {
                 $this->options['where'][$logic] = [];
             }
-            if (is_string($field) && $this->checkMultiField($field, $logic))
-            {
+            if (is_string($field) && $this->checkMultiField($field, $logic)) {
                 $where[$field] = $this->options['multi'][$logic][$field];
-            }
-            elseif(is_array($field))
-            {
-                foreach ($field as $key => $val)
-                {
+            } elseif (is_array($field)) {
+                foreach ($field as $key => $val) {
                     if ($this->checkMultiField($key, $logic)) {
                         $where[$key] = $this->options['multi'][$logic][$key];
                     }
@@ -1157,19 +1143,16 @@ class Query
         if (is_array($join)) {
             $table = $join;
             $alias = array_shift($join);
-        } 
-        else {
+        } else {
             $join = trim($join);
             if (false !== strpos($join, '(')) {
                 // 使用子查询
                 $table = $join;
-            } 
-            else {
+            } else {
                 if (strpos($join, ' ')) {
                     // 使用别名
                     list($table, $alias) = explode(' ', $join);
-                } 
-                else {
+                } else {
                     $table = $join;
                     if (false === strpos($join, '.') && 0 !== strpos($join, '__')) {
                         $alias = $join;
@@ -1234,15 +1217,13 @@ class Query
             $options['data'] = [];
         }
 
-        foreach(['lock', 'distinct'] as $name) 
-        {
+        foreach (['lock', 'distinct'] as $name) {
             if (!isset($options[$name])) {
                 $options[$name] = false;
             }
         }
 
-        foreach(['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment'] as $name) 
-        {
+        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment'] as $name) {
             if (!isset($options[$name])) {
                 $options[$name] = '';
             }
@@ -1262,15 +1243,13 @@ class Query
      */
     public function save($data, $where = null, $sequence = null)
     {
-        if(!$this->getModel())
-        {
+        if (!$this->getModel()) {
             throw new MondbException(
-                'The instance is not bound to the Model!', 
+                'The instance is not bound to the Model!',
                 MondbException::QUERY_MODEL_NOT_BIND
             );
         }
-        if(!method_exists($this->getModel(), 'save'))
-        {
+        if (!method_exists($this->getModel(), 'save')) {
             throw new MondbException(
                 'The model not support autocomplete of save!',
                 MondbException::MODEL_NOT_SUPPORT_SAVE
@@ -1290,14 +1269,13 @@ class Query
      */
     public function get($where = [])
     {
-        if(!$this->getModel())
-        {
+        if (!$this->getModel()) {
             throw new MondbException(
-                'The instance is not bound to the Model!', 
-                MondbException::QUERY_MODEL_NOT_BIND);
+                'The instance is not bound to the Model!',
+                MondbException::QUERY_MODEL_NOT_BIND
+            );
         }
-        if(!method_exists($this->getModel(), 'get'))
-        {
+        if (!method_exists($this->getModel(), 'get')) {
             throw new MondbException(
                 'The model not support autocomplete of get!',
                 MondbException::MODEL_NOT_SUPPORT_GET
@@ -1317,14 +1295,13 @@ class Query
      */
     public function all($where = [])
     {
-        if(!$this->getModel())
-        {
+        if (!$this->getModel()) {
             throw new MondbException(
-                'The instance is not bound to the Model!', 
-                MondbException::QUERY_MODEL_NOT_BIND);
+                'The instance is not bound to the Model!',
+                MondbException::QUERY_MODEL_NOT_BIND
+            );
         }
-        if(!method_exists($this->getModel(), 'all'))
-        {
+        if (!method_exists($this->getModel(), 'all')) {
             throw new MondbException(
                 'The model not support autocomplete of all!',
                 MondbException::MODEL_NOT_SUPPORT_ALL
@@ -1340,6 +1317,21 @@ class Query
      */
     private function getBuilder()
     {
-    	return new Builder($this->connection, $this);
+        return new Builder($this->connection, $this);
+    }
+
+    /**
+     * 触发事件
+     *
+     * @param string $event   事件名
+     * @param mixed  $params  额外参数
+     * @return bool
+     */
+    private function trigger($event, $params = [])
+    {
+        if (isset(self::$event[$event])) {
+            $callback = self::$event[$event];
+            return Container::instance()->invoke($callback, [$params, $this]);
+        }
     }
 }

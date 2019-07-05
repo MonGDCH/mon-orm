@@ -1,16 +1,15 @@
 <?php
+
 namespace mon\orm;
 
-use PDO;
 use mon\orm\db\Connection;
-use mon\orm\exception\MondbException;
 
 /**
-* DB操作类
-*
-* @author Mon <985558837@qq.com>
-* @version v1.0
-*/
+ * DB操作类
+ *
+ * @author Mon <985558837@qq.com>
+ * @version v1.0
+ */
 class Db
 {
 	/**
@@ -36,8 +35,7 @@ class Db
 	 */
 	public static function connect(array $config = [], $reset = false)
 	{
-		if(empty($config))
-		{
+		if (empty($config)) {
 			$config = self::getConfig();
 		}
 
@@ -45,8 +43,7 @@ class Db
 		$key = self::getKey($config);
 
 		// 重连或者不存在链接
-		if($reset === true || !isset(self::$pool[$key]))
-		{
+		if ($reset === true || !isset(self::$pool[$key])) {
 			self::$pool[$key] = new Connection($config);
 		}
 
@@ -56,7 +53,7 @@ class Db
 	/**
 	 * 配置对应加密key
 	 *
-	 * @param  array  $config [description]
+	 * @param  array  $config 配置信息
 	 * @return [type]         [description]
 	 */
 	public static function getKey(array $config)
@@ -67,7 +64,7 @@ class Db
 	/**
 	 * 设置DB配置，方便直接调用
 	 *
-	 * @param array  $config [description]
+	 * @param array  $config 配置信息
 	 * @param [type] $name   [description]
 	 */
 	public static function setConfig(array $config)
@@ -86,14 +83,14 @@ class Db
 	}
 
 	/**
-     * 调用Connection类的方法
-     *
-     * @param  string $method 方法名
-     * @param  array  $params 参数
-     * @return mixed
-     */
-    public static function __callStatic($method, $params)
-    {
-        return call_user_func_array([self::connect(), $method], $params);
-    }
+	 * 调用Connection类的方法
+	 *
+	 * @param  string $method 方法名
+	 * @param  array  $params 参数
+	 * @return mixed
+	 */
+	public static function __callStatic($method, $params)
+	{
+		return call_user_func_array([self::connect(), $method], $params);
+	}
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace mon\orm\model;
 
 use Countable;
@@ -16,33 +17,33 @@ use mon\orm\model\Data;
  */
 class DataCollection implements JsonSerializable, ArrayAccess, Countable, IteratorAggregate
 {
-	/**
-	 * 元数据
-	 *
-	 * @var [type]
-	 */
-	protected $data;
+    /**
+     * 元数据
+     *
+     * @var array
+     */
+    protected $data;
 
-	/**
-	 * 构造方法
-	 *
-	 * @param [type] $data  结果集
-	 * @param Model  $model 绑定的模型
-	 */
-	public function __construct($data)
-	{
-		$this->data = $data;
-	}
+    /**
+     * 构造方法
+     *
+     * @param [type] $data  结果集
+     * @param Model  $model 绑定的模型
+     */
+    public function __construct($data)
+    {
+        $this->data = $data;
+    }
 
-	/**
-	 * 获取元数据
-	 *
-	 * @return [type] [description]
-	 */
-	public function getData()
-	{
-		return $this->data;
-	}
+    /**
+     * 获取元数据
+     *
+     * @return [type] [description]
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
 
     /**
      * 是否为空
@@ -54,16 +55,16 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
         return empty($this->data);
     }
 
-	/**
-	 * 转换为数组输出, 并自动完成数据
-	 *
-	 * @return [type] [description]
-	 */
-	public function toArray()
+    /**
+     * 转换为数组输出, 并自动完成数据
+     *
+     * @return [type] [description]
+     */
+    public function toArray()
     {
         return array_map(function ($value) {
             return ($value instanceof Data || $value instanceof self) ? $value->toArray() : $value;
-        }, $this->data);
+        }, (array)$this->data);
     }
 
     /**
@@ -90,7 +91,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     // ArrayAccess相关处理方法
     public function offsetExists($offset)
     {
-        return array_key_exists($offset, $this->data);
+        return array_key_exists($offset, (array)$this->data);
     }
 
     public function offsetGet($offset)

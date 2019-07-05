@@ -1,37 +1,38 @@
 <?php
+
 namespace mon\orm\db;
 
 use mon\orm\exception\MondbException;
 
 /**
-* 查询语句构造对象
-*/
+ * 查询语句构造对象
+ */
 class Builder
 {
-	// 数据库表达式
+    // 数据库表达式
     protected $exp = [
-    	'eq' => '=',
-    	'neq' => '<>',
-    	'gt' => '>',
-    	'egt' => '>=',
-    	'lt' => '<',
-    	'elt' => '<=',
-    	'notlike' => 'NOT LIKE',
-    	'not like' => 'NOT LIKE',
-    	'like' => 'LIKE',
-    	'in' => 'IN',
-    	'notin' => 'NOT IN',
-    	'not in' => 'NOT IN',
-    	'between' => 'BETWEEN',
-    	'not between' => 'NOT BETWEEN',
-    	'notbetween' => 'NOT BETWEEN',
-    	'exists' => 'EXISTS',
-    	'notexists' => 'NOT EXISTS',
-    	'not exists' => 'NOT EXISTS',
-    	'null' => 'NULL',
-    	'notnull' => 'NOT NULL',
-    	'not null' => 'NOT NULL',
-	];
+        'eq'            => '=',
+        'neq'           => '<>',
+        'gt'            => '>',
+        'egt'           => '>=',
+        'lt'            => '<',
+        'elt'           => '<=',
+        'notlike'       => 'NOT LIKE',
+        'not like'      => 'NOT LIKE',
+        'like'          => 'LIKE',
+        'in'            => 'IN',
+        'notin'         => 'NOT IN',
+        'not in'        => 'NOT IN',
+        'between'       => 'BETWEEN',
+        'not between'   => 'NOT BETWEEN',
+        'notbetween'    => 'NOT BETWEEN',
+        'exists'        => 'EXISTS',
+        'notexists'     => 'NOT EXISTS',
+        'not exists'    => 'NOT EXISTS',
+        'null'          => 'NULL',
+        'notnull'       => 'NOT NULL',
+        'not null'      => 'NOT NULL',
+    ];
 
     // SQL表达式
     protected $selectSql    = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%UNION%%ORDER%%LIMIT%%LOCK%%COMMENT%';
@@ -42,11 +43,14 @@ class Builder
 
     /**
      * 构造方法
+     *
+     * @param Connection $connection    链接实例
+     * @param Query $query              查询实例
      */
     public function __construct(Connection $connection, Query $query)
     {
-    	$this->connection = $connection;
-    	$this->query = $query;
+        $this->connection = $connection;
+        $this->query = $query;
     }
 
     /**
@@ -73,7 +77,9 @@ class Builder
                 $this->parseLock($options['lock']),
                 $this->parseComment($options['comment']),
                 $this->parseForce($options['force']),
-            ], $this->selectSql);
+            ],
+            $this->selectSql
+        );
 
         return $sql;
     }
@@ -104,7 +110,9 @@ class Builder
                 implode(' , ', $fields),
                 implode(' , ', $values),
                 $this->parseComment($options['comment']),
-            ], $this->insertSql);
+            ],
+            $this->insertSql
+        );
 
         return $sql;
     }
@@ -120,15 +128,14 @@ class Builder
     public function insertAll($dataSet, $options = [], $replace = false)
     {
         // 获取合法的字段
-    	$fields = $options['field'];
+        $fields = $options['field'];
 
         foreach ($dataSet as $data) {
             foreach ($data as $key => $val) {
                 if (is_array($fields) && !in_array($key, $fields)) {
                     // 过滤掉合法字段外的字段
                     unset($data[$key]);
-                }
-                else if (is_null($val)) {
+                } else if (is_null($val)) {
                     $data[$key] = 'NULL';
                 } elseif (is_scalar($val)) {
                     $data[$key] = $this->parseValue($val, $key);
@@ -153,7 +160,9 @@ class Builder
                 implode(' , ', $insertFields),
                 implode(' , ', $values),
                 $this->parseComment($options['comment']),
-            ], $this->insertAllSql);
+            ],
+            $this->insertAllSql
+        );
     }
 
     /**
@@ -185,7 +194,9 @@ class Builder
                 $this->parseLimit($options['limit']),
                 $this->parseLock($options['lock']),
                 $this->parseComment($options['comment']),
-            ], $this->updateSql);
+            ],
+            $this->updateSql
+        );
 
         return $sql;
     }
@@ -209,7 +220,9 @@ class Builder
                 $this->parseLimit($options['limit']),
                 $this->parseLock($options['lock']),
                 $this->parseComment($options['comment']),
-            ], $this->deleteSql);
+            ],
+            $this->deleteSql
+        );
 
         return $sql;
     }
@@ -229,8 +242,7 @@ class Builder
 
         $key = trim($key);
         // 表字段支持
-        if (strpos($key, '.') && !preg_match('/[,\'\"\(\)`\s]/', $key))
-        {
+        if (strpos($key, '.') && !preg_match('/[,\'\"\(\)`\s]/', $key)) {
             list($table, $key) = explode('.', $key, 2);
 
             if (isset($options['alias'][$table])) {
@@ -260,8 +272,7 @@ class Builder
     public function parseTable($tables, $options = [])
     {
         $item = [];
-        foreach ((array) $tables as $key => $table)
-        {
+        foreach ((array) $tables as $key => $table) {
             if (!is_numeric($key)) {
                 $item[] = $this->parseKey($key) . ' ' . (isset($options['alias'][$table]) ? $this->parseKey($options['alias'][$table]) : $this->parseKey($table));
             } else {
@@ -454,8 +465,7 @@ class Builder
             $bindName = md5($bindName);
         }
 
-        if (is_scalar($value) && !in_array($exp, ['EXP', 'NOT NULL', 'NULL', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN']))
-        {
+        if (is_scalar($value) && !in_array($exp, ['EXP', 'NOT NULL', 'NULL', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'])) {
             if (strpos($value, ':') !== 0 || !$this->query->isBind(substr($value, 1))) {
                 if ($this->query->isBind($bindName)) {
                     $bindName .= '_' . str_replace('.', '_', uniqid('', true));
@@ -469,7 +479,6 @@ class Builder
         if (in_array($exp, ['=', '<>', '>', '>=', '<', '<='])) {
             // 比较运算
             $whereStr .= $key . ' ' . $exp . ' ' . $this->parseValue($value, $field);
-
         } elseif ('LIKE' == $exp || 'NOT LIKE' == $exp) {
             // 模糊匹配
             if (is_array($value)) {
@@ -477,7 +486,7 @@ class Builder
                     $array[] = $key . ' ' . $exp . ' ' . $this->parseValue($item, $field);
                 }
                 $logic = isset($val[2]) ? $val[2] : 'AND';
-                $whereStr .= '(' . implode($array, ' ' . strtoupper($logic) . ' ') . ')';
+                $whereStr .= '(' . implode(' ' . strtoupper($logic) . ' ', $array) . ')';
             } else {
                 $whereStr .= $key . ' ' . $exp . ' ' . $this->parseValue($value, $field);
             }
@@ -490,12 +499,11 @@ class Builder
             $zone = implode(',', $this->parseValue($value, $field));
 
             $whereStr .= $key . ' ' . $exp . ' (' . (empty($zone) ? "''" : $zone) . ')';
-            
         } elseif (in_array($exp, ['NOT BETWEEN', 'BETWEEN'])) {
             // BETWEEN 查询
             $data = is_array($value) ? $value : explode(',', $value);
             $between = $this->parseValue($data[0], $field) . ' AND ' . $this->parseValue($data[1], $field);
-            
+
             $whereStr .= $key . ' ' . $exp . ' ' . $between;
         } elseif (in_array($exp, ['NOT EXISTS', 'EXISTS'])) {
             $whereStr .= $exp . ' (' . $value . ')';
@@ -646,7 +654,7 @@ class Builder
     protected function parseComment($comment)
     {
         if (false !== strpos($comment, '*/')) {
-            $comment = strstr($coment, '*/', true);
+            $comment = strstr($comment, '*/', true);
         }
         return !empty($comment) ? ' /* ' . $comment . ' */' : '';
     }
@@ -709,5 +717,4 @@ class Builder
         }
         return $result;
     }
-
 }

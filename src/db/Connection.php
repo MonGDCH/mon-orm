@@ -1,62 +1,62 @@
 <?php
+
 namespace mon\orm\db;
 
 use PDO;
 use Exception;
-use Throwable;
 use PDOException;
 use mon\orm\db\Query;
 use mon\orm\exception\MondbException;
 
 /**
-* 链接DB
-*
-* @author Mon 985558837@qq.com
-* @version v1.0
-*/
+ * 链接DB
+ *
+ * @author Mon 985558837@qq.com
+ * @version v1.0
+ */
 class Connection
 {
-	/**
-	 * PDO链接
-	 *
-	 * @var null
-	 */
-	protected $link = null;
+    /**
+     * PDO链接
+     *
+     * @var null
+     */
+    protected $link = null;
 
-	/**
-	 * 查询结果集
-	 *
-	 * @var null
-	 */
-	protected $PDOStatement = null;
+    /**
+     * 查询结果集
+     *
+     * @var null
+     */
+    protected $PDOStatement = null;
 
-	/**
-	 * 查询语句
-	 *
-	 * @var string
-	 */
-	protected $queryStr = '';
+    /**
+     * 查询语句
+     *
+     * @var string
+     */
+    protected $queryStr = '';
 
-	/**
-	 * 绑定值
-	 *
-	 * @var [type]
-	 */
-	protected $bind = [];
+    /**
+     * 绑定值
+     *
+     * @var [type]
+     */
+    protected $bind = [];
 
-	/**
-	 * 错误信息
-	 *
-	 * @var string
-	 */
-	protected $error = '';
+    /**
+     * 错误信息
+     *
+     * @var string
+     */
+    protected $error = '';
 
-	/**
-	 * 返回或者影响行数
-	 *
-	 * @var integer
-	 */
-	protected $numRows = 0;
+    /**
+     * 返回或者影响行数
+     *
+     * @var integer
+     */
+    protected $numRows = 0;
 
     /**
      * 事务级别, 防止出现事务嵌套
@@ -65,65 +65,65 @@ class Connection
      */
     protected $transLevel = 0;
 
-	/**
-	 * DB配置
-	 *
-	 * @var [type]
-	 */
-	protected $config = [
-		 // 数据库类型
-        'type'            => 'mysql',
+    /**
+     * DB配置
+     *
+     * @var array
+     */
+    protected $config = [
+        // 数据库类型
+        'type'                          => 'mysql',
         // 服务器地址
-        'host'        	  => '127.0.0.1',
+        'host'                          => '127.0.0.1',
         // 数据库名
-        'database'        => '',
+        'database'                      => '',
         // 用户名
-        'username'        => '',
+        'username'                      => '',
         // 密码
-        'password'        => '',
+        'password'                      => '',
         // 端口
-        'port'        	  => '3306',
+        'port'                          => '3306',
         // 数据库连接参数
         'params'          => [
-        	PDO::ATTR_CASE              => PDO::CASE_NATURAL,
-	        PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
-	        PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
-	        PDO::ATTR_STRINGIFY_FETCHES => false,
-	        PDO::ATTR_EMULATE_PREPARES  => false,
+            PDO::ATTR_CASE              => PDO::CASE_NATURAL,
+            PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
+            PDO::ATTR_STRINGIFY_FETCHES => false,
+            PDO::ATTR_EMULATE_PREPARES  => false,
         ],
         // 数据库编码默认采用utf8
-        'charset'         => 'utf8',
+        'charset'                       => 'utf8',
         // 返回结果集类型
-        'result_type'  	  => PDO::FETCH_ASSOC,
+        'result_type'                   => PDO::FETCH_ASSOC,
         // 断线是否重连，注意：强制重连有可能导致数据库core掉
-        'break_reconnect' => false,
-	];
+        'break_reconnect'               => false,
+    ];
 
-	/**
-	 * 构造方法
-	 *
-	 * @param [type] $config [description]
-	 */
-	public function __construct(array $config)
-	{
-		if (!empty($config)) {
-            $this->config = array_merge($this->config, $config);
+    /**
+     * 构造方法
+     *
+     * @param [type] $config [description]
+     */
+    public function __construct(array $config)
+    {
+        if (!empty($config)) {
+            $this->config = array_merge((array)$this->config, $config);
         }
 
         $this->connect();
-	}
+    }
 
-	/**
-	 * 析构方法
-	 */
-	public function __destruct()
-	{
-		// 释放查询
+    /**
+     * 析构方法
+     */
+    public function __destruct()
+    {
+        // 释放查询
         if ($this->PDOStatement) {
             $this->free();
         }
-		$this->close();
-	}
+        $this->close();
+    }
 
     /**
      * 调用Query类的查询方法
@@ -147,7 +147,7 @@ class Connection
         return new Query($this);
     }
 
-	/**
+    /**
      * 获取数据库的配置参数
      *
      * @param string $name 配置名称
@@ -179,15 +179,15 @@ class Connection
         return $this->getLink()->lastInsertId($pk);
     }
 
-	/**
-	 * 获取最近一次查询的sql语句
-	 *
-	 * @return [type] [description]
-	 */
-	public function getLastSql()
-	{
-		return $this->getRealSql($this->queryStr, $this->bind);
-	}
+    /**
+     * 获取最近一次查询的sql语句
+     *
+     * @return [type] [description]
+     */
+    public function getLastSql()
+    {
+        return $this->getRealSql($this->queryStr, (array)$this->bind);
+    }
 
     /**
      * 获取最近的错误信息
@@ -208,29 +208,28 @@ class Connection
         return $error;
     }
 
-	/**
-	 * 链接DB
-	 *
-	 * @param  array  $config [description]
-	 * @return [type]         [description]
-	 */
-	public function connect(array $config = [])
-	{
-		try{
-            if(!empty($config) && is_array($config)){
-                $this->config = array_merge($this->config, $config);
+    /**
+     * 链接DB
+     *
+     * @param  array  $config 配置信息
+     * @return [type]         [description]
+     */
+    public function connect(array $config = [])
+    {
+        try {
+            if (!empty($config) && is_array($config)) {
+                $this->config = array_merge((array)$this->config, $config);
             }
 
             // 生成mysql连接dsn
-            $is_port = ( isset($this->config['port']) && is_int($this->config['port'] * 1) );
-            $dsn = 'mysql:host=' . $this->config['host'] . 
-                    ($is_port ? ';port=' . $this->config['port'] : '') . 
-                    ';dbname=' . $this->config['database'];
+            $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
+            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') .
+                ';dbname=' . $this->config['database'];
 
-            if(!empty($this->config['charset'])){
+            if (!empty($this->config['charset'])) {
                 $dsn .= ';charset=' . $this->config['charset'];
             }
- 
+
             // 链接
             $this->link = new PDO(
                 $dsn,
@@ -240,55 +239,51 @@ class Connection
             );
 
             return $this;
-        }catch(PDOException $e){
+        } catch (PDOException $e) {
             throw new MondbException(
-                'Link Error: '.$e->getMessage(), 
-                MondbException::LINK_FAILURE, 
+                'Link Error: ' . $e->getMessage(),
+                MondbException::LINK_FAILURE,
                 $e
             );
         }
-	}
+    }
 
-	/**
-	 * 获取DB链接
-	 *
-	 * @return [type] [description]
-	 */
-	public function getLink()
-	{
-		if(is_null($this->link))
-		{
-			$this->connect();
-		}
+    /**
+     * 获取DB链接
+     *
+     * @return [type] [description]
+     */
+    public function getLink()
+    {
+        if (is_null($this->link)) {
+            $this->connect();
+        }
 
-		return $this->link;
-	}
+        return $this->link;
+    }
 
-	/**
-	 * 执行查询语句
-	 *
-	 * @param  string  $sql  SQL语句
-	 * @param  array   $bind 绑定的值
-	 * @param  boolean $pdo  是否返回PDO对象
-	 * @return [type]        [description]
-	 */
-	public function query($sql, array $bind = [], $pdo = false)
-	{
-		$this->queryStr = $sql;
-		if(!empty($bind))
-		{
-			$this->bind = $bind;
-		}
+    /**
+     * 执行查询语句
+     *
+     * @param  string  $sql  SQL语句
+     * @param  array   $bind 绑定的值
+     * @param  boolean $pdo  是否返回PDO对象
+     * @return [type]        [description]
+     */
+    public function query($sql, array $bind = [], $pdo = false)
+    {
+        $this->queryStr = $sql;
+        if (!empty($bind)) {
+            $this->bind = $bind;
+        }
 
         // 释放上一次查询的结果集
-        if(!empty($this->PDOStatement))
-        {
+        if (!empty($this->PDOStatement)) {
             $this->free();
-        }        
+        }
 
         // 预处理SQL
-        if (empty($this->PDOStatement))
-        {
+        if (empty($this->PDOStatement)) {
             $this->PDOStatement = $this->getLink()->prepare($sql);
         }
         // 是否为存储过程调用
@@ -302,24 +297,23 @@ class Connection
         // 执行查询
         $this->PDOStatement->execute();
         // 返回结果集
-        return $this->getResult($pdo, $procedure); 
-	}
+        return $this->getResult($pdo, $procedure);
+    }
 
-	/**
-	 * 执行命令语句
-	 *
-	 * @param  string $sql  SQL语句
-	 * @param  array  $bind 绑定的值
-	 * @return [type]       [description]
-	 */
-	public function execute($sql, array $bind = [])
-	{
-		$this->queryStr = $sql;
-		if(!empty($bind))
-		{
-			$this->bind = $bind;
-		}
-        
+    /**
+     * 执行命令语句
+     *
+     * @param  string $sql  SQL语句
+     * @param  array  $bind 绑定的值
+     * @return [type]       [description]
+     */
+    public function execute($sql, array $bind = [])
+    {
+        $this->queryStr = $sql;
+        if (!empty($bind)) {
+            $this->bind = $bind;
+        }
+
         //释放前次的查询结果
         if (!empty($this->PDOStatement) && $this->PDOStatement->queryString != $sql) {
             $this->free();
@@ -341,9 +335,9 @@ class Connection
         // 返回影响行数
         $this->numRows = $this->PDOStatement->rowCount();
         return $this->numRows;
-	}
+    }
 
-	/**
+    /**
      * 开启事务
      *
      * @return [type] [description]
@@ -352,11 +346,10 @@ class Connection
     {
         ++$this->transLevel;
         // 只有当事务无嵌套才开启事务
-        if($this->transLevel == 1){
+        if ($this->transLevel == 1) {
             $this->getLink()->beginTransaction();
-        }
-        elseif($this->transLevel > 1){
-            $this->getLink()->exec($this->parseSavepoint('trans'.$this->transLevel));
+        } elseif ($this->transLevel > 1) {
+            $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
         }
     }
 
@@ -367,7 +360,7 @@ class Connection
      */
     public function commit()
     {
-        if($this->transLevel == 1){
+        if ($this->transLevel == 1) {
             $this->getLink()->commit();
         }
         --$this->transLevel;
@@ -380,12 +373,11 @@ class Connection
      */
     public function rollBack()
     {
-        if($this->transLevel == 1){
+        if ($this->transLevel == 1) {
             $this->transLevel = 0;
             $this->getLink()->rollBack();
-        }
-        elseif($this->transLevel > 1){
-            $this->getLink()->exec($this->parseSavepointRollBack('trans'.$this->transLevel));
+        } elseif ($this->transLevel > 1) {
+            $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
         }
         $this->transLevel = max(0, $this->transLevel - 1);
     }
@@ -402,8 +394,8 @@ class Connection
         $pdoStatement = $this->query($sql, [], true);
         $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         $info = [];
-        if($result){
-            foreach($result as $key => $val){
+        if ($result) {
+            foreach ($result as $key => $val) {
                 $val = array_change_key_case($val);
                 $info[$val['field']] = [
                     'name'    => $val['field'],
@@ -441,7 +433,7 @@ class Connection
     /**
      * SQL性能分析
      *
-     * @param  [type] $sql [description]
+     * @param  string $sql SQL语句
      * @return [type]      [description]
      */
     public function explain($sql)
@@ -452,40 +444,40 @@ class Connection
         return array_change_key_case($result);
     }
 
-	/**
-	 * PDO自带安全过滤
-	 *
-	 * @param  string $value 需要过滤的值
-	 * @return [type]        [description]
-	 */
-	public function quote($value)
-	{
-		return $this->getLink()->quote($value);
-	}
+    /**
+     * PDO自带安全过滤
+     *
+     * @param  string $value 需要过滤的值
+     * @return [type]        [description]
+     */
+    public function quote($value)
+    {
+        return $this->getLink()->quote($value);
+    }
 
-	/**
-	 * 断开链接
-	 *
-	 * @return [type] [description]
-	 */
-	public function close()
-	{
-		$this->link = null;
+    /**
+     * 断开链接
+     *
+     * @return [type] [description]
+     */
+    public function close()
+    {
+        $this->link = null;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * 释放查询结果集
-	 * 
-	 * @return [type] [description]
-	 */
-	public function free()
-	{
-		$this->PDOStatement = null;
-	}
+    /**
+     * 释放查询结果集
+     * 
+     * @return [type] [description]
+     */
+    public function free()
+    {
+        $this->PDOStatement = null;
+    }
 
-	/**
+    /**
      * 根据参数绑定组装最终的SQL语句 便于调试
      *
      * @param string    $sql  带参数绑定的sql语句
@@ -495,7 +487,7 @@ class Connection
     public function getRealSql($sql, array $bind = [])
     {
         if (is_array($sql)) {
-            $sql = implode(';', $sql);
+            $sql = implode(';', (array)$sql);
         }
 
         foreach ($bind as $key => $val) {
@@ -508,16 +500,16 @@ class Connection
             }
             // 判断占位符
             $sql = is_numeric($key) ?
-            substr_replace($sql, $value, strpos($sql, '?'), 1) :
-            str_replace(
-                [':' . $key . ')', ':' . $key . ',', ':' . $key . ' ', ':' . $key . PHP_EOL],
-                [$value . ')', $value . ',', $value . ' ', $value . PHP_EOL],
-                $sql . ' ');
+                substr_replace($sql, $value, strpos($sql, '?'), 1) : str_replace(
+                    [':' . $key . ')', ':' . $key . ',', ':' . $key . ' ', ':' . $key . PHP_EOL],
+                    [$value . ')', $value . ',', $value . ' ', $value . PHP_EOL],
+                    $sql . ' '
+                );
         }
         return rtrim($sql);
     }
 
-	/**
+    /**
      * 参数绑定
      * 支持 ['name'=>'value','id'=>123] 对应命名占位符
      * 或者 ['value',123] 对应问号占位符
@@ -541,7 +533,7 @@ class Connection
             if (!$result) {
                 throw new MondbException(
                     "Bind value error: {$param}",
-                    MondbException:: BIND_VALUE_ERROR
+                    MondbException::BIND_VALUE_ERROR
                 );
             }
         }
@@ -567,7 +559,7 @@ class Connection
                 $param = array_shift($val);
                 throw new Exception(
                     "Bind param error: {$param}",
-                    MondbException:: BIND_VALUE_ERROR
+                    MondbException::BIND_VALUE_ERROR
                 );
             }
         }
@@ -590,7 +582,7 @@ class Connection
             // 存储过程返回结果
             return $this->procedure();
         }
-        $result        = $this->PDOStatement->fetchAll( $this->getConfig('result_type') );
+        $result        = $this->PDOStatement->fetchAll($this->getConfig('result_type'));
         $this->numRows = count($result);
         return $result;
     }
@@ -634,5 +626,4 @@ class Connection
     {
         return 'ROLLBACK TO SAVEPOINT ' . $name;
     }
-
 }
