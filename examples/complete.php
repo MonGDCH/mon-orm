@@ -2,6 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Model;
+
 date_default_timezone_set('PRC');
 
 class Test extends Model
@@ -18,15 +19,15 @@ class Test extends Model
 	 */
 	public $config = [
 		// 服务器地址
-        'host'        	  => '127.0.0.1',
-        // 数据库名
-        'database'        => 'test',
-        // 用户名
-        'username'        => 'root',
-        // 密码
-        'password'        => 'root',
-        // 端口
-        'port'        	  => '3306',
+		'host'        	  => '127.0.0.1',
+		// 数据库名
+		'database'        => 'test',
+		// 用户名
+		'username'        => 'root',
+		// 密码
+		'password'        => 'root',
+		// 端口
+		'port'        	  => '3306',
 	];
 
 	/**
@@ -62,7 +63,8 @@ class Test extends Model
 	 * @param [type] $val 默认值
 	 * @param array  $row 列值
 	 */
-	protected function setCreateTimeAttr($val, $row = []){
+	protected function setCreateTimeAttr($val, $row = [])
+	{
 		return $_SERVER['REQUEST_TIME'];
 	}
 
@@ -72,7 +74,8 @@ class Test extends Model
 	 * @param [type] $val 默认值
 	 * @param array  $row 列值
 	 */
-	protected function setUpdateTimeAttr($val, $row = []){
+	protected function setUpdateTimeAttr($val, $row = [])
+	{
 		return $_SERVER['REQUEST_TIME'];
 	}
 
@@ -83,7 +86,8 @@ class Test extends Model
 	 * @param  array  $row [description]
 	 * @return [type]      [description]
 	 */
-	protected function getCreateTimeAttr($val, $row){
+	protected function getCreateTimeAttr($val, $row)
+	{
 		return date('Y-m-d H:i:s', $val);
 	}
 
@@ -104,7 +108,8 @@ class Test extends Model
 	 * @param  [type] $row [description]
 	 * @return [type]      [description]
 	 */
-	protected function getTestAttr($val, $row){
+	protected function getTestAttr($val, $row)
+	{
 		var_dump($val, $row);
 		return 'test';
 	}
@@ -126,7 +131,7 @@ class Test extends Model
 	 */
 	public function testScopee()
 	{
-		return $this->scope(function($query){
+		return $this->scope(function ($query) {
 			return  $query->where('id', '>', 50);
 		})->select();
 	}
@@ -160,4 +165,3 @@ var_dump($data->getdata(), $data->toArray());
 // var_dump($data, $test->getLastSql());
 
 // var_dump($data->isEmpty(), $data->toArray(), $test->getLastSql());
-

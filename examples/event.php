@@ -18,17 +18,19 @@ $config = [
 	'port'        	  => '3306',
 ];
 
-class Test{
-    public function insert($option, $query){
-        var_dump($query->getLastInsID());
-    }
+class Test
+{
+	public function insert($option, $query)
+	{
+		var_dump($query->getLastInsID());
+	}
 }
 
 Db::setConfig($config);
 
 // 绑定事件
-DB::event('select', function($option, $query){
-    var_dump($option, $query->getLastSql());
+DB::event('select', function ($option, $query) {
+	var_dump($option, $query->getLastSql());
 });
 
 Db::event('insert', 'Test@insert');

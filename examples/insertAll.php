@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+
 use mon\orm\Model;
+
 date_default_timezone_set('PRC');
 
 class Test extends Model
@@ -51,9 +53,9 @@ class Test extends Model
     public function as()
     {
         $data = $this->alias(['mon_notice' => 'c', 'mon_admin' => 'a', 'mon_auth_rule' => 'b'])
-                    ->field('c.name, c.author, a.username')
-                    ->join('mon_admin', 'c.author=a.id')
-                    ->select();
+            ->field('c.name, c.author, a.username')
+            ->join('mon_admin', 'c.author=a.id')
+            ->select();
         return $data;
     }
 

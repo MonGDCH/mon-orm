@@ -3,6 +3,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Db;
 use mon\orm\Model;
+
 date_default_timezone_set('PRC');
 
 $config = [
@@ -40,7 +41,7 @@ class Test extends Model
 
 $test = new Test();
 
-try{
+try {
 	// scope参数传递
 	// $data = $test->scope('args', 51)->select();
 	$data = $test->scope('args', 1, 1)->select();
@@ -49,7 +50,7 @@ try{
 	// $data = $test->scope('argss', 60, 1)->select();
 
 	var_dump($data, $test->getLastSql());
-}catch(\mon\orm\exception\MondbException $e){
+} catch (\mon\orm\exception\MondbException $e) {
 	var_dump($e->getMessage());
 	var_dump($e->getCode());
 }

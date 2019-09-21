@@ -36,9 +36,9 @@ function a($save = true)
 		'create_time' => $_SERVER['REQUEST_TIME'],
 	]);
 
-	if($save){
+	if ($save) {
 		Db::commit();
-	}else{
+	} else {
 		Db::rollBack();
 	}
 
@@ -55,16 +55,17 @@ function b($save = true)
 		'create_time' => $_SERVER['REQUEST_TIME'],
 	]);
 
-	if($save){
+	if ($save) {
 		Db::commit();
-	}else{
+	} else {
 		Db::rollBack();
 	}
 
 	return $save;
 }
 
-function c(){
+function c()
+{
 
 	Db::startTrans();
 
@@ -77,7 +78,7 @@ function c(){
 	var_dump(Db::table('test')->select());
 
 	$a = a();
-	if(!$a){
+	if (!$a) {
 		Db::rollBack();
 		return false;
 	}
@@ -85,7 +86,7 @@ function c(){
 	var_dump(Db::table('test')->select());
 
 	$b = b(true);
-	if(!$b){
+	if (!$b) {
 		Db::rollBack();
 		return false;
 	}

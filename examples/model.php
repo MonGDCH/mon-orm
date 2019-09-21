@@ -15,15 +15,15 @@ class User extends Model
 
 	public $config = [
 		// 服务器地址
-        'host'        	  => '127.0.0.1',
-        // 数据库名
-        'database'        => 'test',
-        // 用户名
-        'username'        => 'root',
-        // 密码
-        'password'        => 'root',
-        // 端口
-        'port'        	  => '3306',
+		'host'        	  => '127.0.0.1',
+		// 数据库名
+		'database'        => 'test',
+		// 用户名
+		'username'        => 'root',
+		// 密码
+		'password'        => 'root',
+		// 端口
+		'port'        	  => '3306',
 	];
 
 	public function demo()
@@ -65,4 +65,3 @@ $data3 = User::sum('status');
 var_dump($data3);
 // $setInc = $user->incs();
 // var_dump($setInc);
-
