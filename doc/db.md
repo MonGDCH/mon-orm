@@ -2,7 +2,7 @@
 
 > 通过抽象数据库访问层，将数据库链接、SQL查询构建、SQL查询生成等业务功能封装起来，只需要使用公共的DB类进行操作即可。
 
-## 数据库配置
+### 数据库配置
 
 ```php
 
@@ -40,7 +40,7 @@ return [
 
 ```
 
-## 全局配置DB链接配置
+### 全局配置DB链接配置
 
 > 全局设置DB链接默认配置，方便调用
 
@@ -48,13 +48,13 @@ return [
 Db::setConfig( array $config ) : void
 ```
 
-### Demo
+#### Demo
 
 ```php
 Db::setConfig($config);
 ```
 
-## 获取全局默认DB链接配置
+### 获取全局默认DB链接配置
 
 > 获取设置的默认DB链接配置，对应setConfig方法
 
@@ -62,12 +62,12 @@ Db::setConfig($config);
 Db::getConfig() : array
 ```
 
-### Demo
+#### Demo
 ```php
 $config = Db::getConfig();
 ```
 
-## 链接数据库
+### 链接数据库
 
 > 链接DB
 
@@ -75,14 +75,14 @@ $config = Db::getConfig();
 Db::connect( [ array $config, boolean $reset ] ) : Connection
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
 | config | array | 否 | 链接数据库配置信息，如果设置了默认配置，且不使用新的配置，则可不填写 | 无 |
 | reset | boolean | 否 | 是否重新链接数据库 | false |
 
-### Demo
+#### Demo
 
 ```php
 
@@ -100,7 +100,7 @@ Db::connect($config)->table('test')->select();
 
 ```
 
-## 获取数据库链接池标识位
+### 获取数据库链接池标识位
 
 > 获取数据库链接池标识位，可通过标识位定位链接哪个DB
 
@@ -108,13 +108,13 @@ Db::connect($config)->table('test')->select();
 Db::getKey( array $config ) : String
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
 | config | array | 是 | 链接数据库配置信息，如果设置了默认配置，且不使用新的配置，则可不填写 | 无 |
 
-### Demo
+#### Demo
 
 ```php
 $key = Db::getKey($config);

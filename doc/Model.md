@@ -1,6 +1,6 @@
 # 模型定义及使用
 
-## 模型定义
+### 模型定义
 
 > 模型为Db实例的封装，提供了查询场景、数据自动完成(设置器，获取器)等功能实现
 
@@ -114,15 +114,17 @@ class Test extends \mon\orm\Model
 
 ```
 
-### 模型查询
+#### 模型查询
 
 > 模型可使用DB实例中封装好的数据库链接、SQL查询构建、SQL查询生成等业务功能暴露的接口方法。
+
+#### Demo
 
 ```php
 $find = Test::where('id', 1)->find();
 ```
 
-### 获取DB实例
+#### 获取DB实例
 
 > 获取模型封装的DB实例
 
@@ -130,13 +132,13 @@ $find = Test::where('id', 1)->find();
 db( boolean $newLink ) : Connect
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
 | newLink | boolean | 否 | 是否重新链接数据库 | false |
 
-### Demo
+#### Demo
 
 ```php
 
@@ -149,7 +151,7 @@ $connect = Test::db();
 
 ```
 
-### 查询场景
+#### 查询场景
 
 > 使用模型查询场景可以更好的抽象化查询业务，对特定业务特定场景的业务逻辑进行封装。
 
@@ -157,7 +159,7 @@ $connect = Test::db();
 scope( Closure|String $name, [...$args] ) : Query
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
@@ -186,7 +188,7 @@ $this->scope(function($query){
 
 ```
 
-### 保存数据
+#### 保存数据
 
 > 结合insert、update两个属性可以做到在新增或者更新数据时，实现数据自动完成（设置器）
 
@@ -194,7 +196,7 @@ $this->scope(function($query){
 save( array $data [ , array $where, string $sequence, Query $query ] ) : Data
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
@@ -203,7 +205,7 @@ save( array $data [ , array $where, string $sequence, Query $query ] ) : Data
 | sequence | string | 否 | 自增序列名，存在且为新增操作时，返回自增ID | null |
 | query | Db | 否 | 查询实例 | null |
 
-#### Demo
+##### Demo
 
 ```php
 
@@ -215,7 +217,7 @@ $save = $this->save(['name' => 'demo'], ['id' => 1]);
 
 ```
 
-#### 新增时自动写入或补全
+##### 新增时自动写入或补全
 
 定义$this->insert属性，设置新增时要自动完成的数据
 
@@ -248,13 +250,13 @@ protected function setUpdateTimeAttr($val, $row = []){
 * 对应自动完成使用名为驼峰法命名，会将设置的字段名中的“_”转换为驼峰式
 
 
-#### 更新时自动写入或补全
+##### 更新时自动写入或补全
 
 * 当设置了update属性后，更新时会自动查找写入的数据并对数据进行调整和补全
 * 具体实现方式与上述的新增时一致，使用设置器实现
 
 
-### 获取单条记录
+#### 获取单条记录
 
 > 结合append属性可以做到在获取数据时，实现数据自动完成（获取器）
 
@@ -262,14 +264,14 @@ protected function setUpdateTimeAttr($val, $row = []){
 get( [ array $where, Db $db ] ) : Data
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
 | where | array | 否 | 查询where条件 | 无 |
 | Db | Db | 否 | 查询实例 | null |
 
-#### Demo
+##### Demo
 
 ```php
 
@@ -281,7 +283,7 @@ $find = $this->where('id', 1)->where(['status' => 1])->get();
 
 ```
 
-#### 读取数据时，补全数据
+##### 读取数据时，补全数据
 
 定义$this->append属性，设置新增时要自动完成的数据
 
@@ -325,7 +327,7 @@ protected function getCreateTimeAttr($val, $row){
 * 对应自动完成使用名为驼峰法命名，会将设置的字段名中的“_”转换为驼峰式
 
 
-### 查询多条记录
+#### 查询多条记录
 
 > 结合append属性可以做到在获取数据时，实现数据自动完成（获取器）
 
@@ -333,14 +335,14 @@ protected function getCreateTimeAttr($val, $row){
 all( [ array $where, Db $db ] ) : Data
 ```
 
-### 参数说明
+#### 参数说明
 
 | 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
 | ------------ | ------------ | ------------ | ------------ | ------------ |
 | where | array | 否 | 查询where条件 | 无 |
 | Db | Db | 否 | 查询实例 | null |
 
-#### Demo
+##### Demo
 
 ```php
 
