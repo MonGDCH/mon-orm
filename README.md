@@ -12,6 +12,10 @@
 composer require mongdch/mon-orm
 ```
 
+## 文档Wiki
+
+[查看文档Wiki](https://github.com/MonGDCH/mon-orm/wiki)
+
 ## 使用
 
 ### Db类
