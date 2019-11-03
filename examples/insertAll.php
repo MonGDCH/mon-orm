@@ -7,7 +7,7 @@ date_default_timezone_set('PRC');
 
 class Test extends Model
 {
-    protected $table = "mon_notice";
+    protected $table = "test";
 
     protected $config = [
         // 服务器地址
@@ -17,7 +17,7 @@ class Test extends Model
         // 用户名
         'username'        => 'root',
         // 密码
-        'password'        => 'root',
+        'password'        => '19930603',
         // 端口
         'port'            => '3306',
     ];
@@ -27,21 +27,11 @@ class Test extends Model
         $data = [
             [
                 'name'          => 't1',
-                'content'       => 't1-content',
-                'online_time'   => 123,
-                'offline_time'  => 456,
-                'create_time'   => 789,
-                'update_time'   => 147,
-                'author'        => 1
+                'status'        => 1
             ],
             [
                 'name'          => 't2',
-                'content'       => 't2-content',
-                'online_time'   => 123,
-                'offline_time'  => 456,
-                'create_time'   => 789,
-                'update_time'   => 147,
-                'author'        => 1
+                'status'        => 0
             ],
         ];
 
@@ -74,4 +64,6 @@ $t = new Test;
 // var_dump($t->as(), $t->getLastSql());
 
 
-var_dump($t->un(), $t->getLastSql());
+// var_dump($t->un(), $t->getLastSql());
+
+var_dump($t->addAll());

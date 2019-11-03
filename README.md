@@ -198,6 +198,11 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.1.2
+
+* 优化代码
+* 增加connect、query、execute事件等DB类的全局事件绑定
+
 ### 2.1.1
 
 * 优化代码

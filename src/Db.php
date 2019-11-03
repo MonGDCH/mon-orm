@@ -2,6 +2,7 @@
 
 namespace mon\orm;
 
+use mon\factory\Container;
 use mon\orm\db\Connection;
 
 /**
@@ -18,6 +19,13 @@ class Db
 	 * @var array
 	 */
 	private static $pool = [];
+
+	/**
+	 * 查询事件
+	 *
+	 * @var array
+	 */
+	private static $event = [];
 
 	/**
 	 * DB配置
@@ -48,6 +56,34 @@ class Db
 		}
 
 		return self::$pool[$key];
+	}
+
+	/**
+	 * 注册回调方法
+	 *
+	 * @param string   $event    事件名
+	 * @param callable $callback 回调方法
+	 * @return void
+	 */
+	public static function event($event, $callback)
+	{
+		self::$event[$event] = $callback;
+	}
+
+	/**
+	 * 触发事件
+	 *
+	 * @param string 	 $event   		事件名
+	 * @param array  	 $params  		额外参数
+	 * @param Connection $connection	链接实例
+	 * @return void
+	 */
+	public static function trigger($event, Connection $connection, $params = [])
+	{
+		if (isset(self::$event[$event])) {
+			$callback = self::$event[$event];
+			return Container::instance()->invoke($callback, [$params, $connection]);
+		}
 	}
 
 	/**

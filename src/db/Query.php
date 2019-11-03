@@ -5,11 +5,11 @@ namespace mon\orm\db;
 use PDO;
 use Closure;
 use PDOStatement;
+use mon\orm\Db;
 use mon\orm\Model;
 use mon\orm\db\Builder;
 use mon\orm\db\Connection;
 use mon\orm\exception\MondbException;
-use mon\factory\Container;
 
 /**
  * 查询构造器
@@ -62,13 +62,6 @@ class Query
     protected $model;
 
     /**
-     * 查询事件
-     *
-     * @var array
-     */
-    private static $event = [];
-
-    /**
      * 构造方法
      *
      * @param Connection $connection 链接实例
@@ -77,18 +70,6 @@ class Query
     {
         $this->connection = $connection;
         $this->builder = $this->getBuilder();
-    }
-
-    /**
-     * 注册回调方法
-     *
-     * @param string   $event    事件名
-     * @param callable $callback 回调方法
-     * @return void
-     */
-    public static function event($event, $callback)
-    {
-        self::$event[$event] = $callback;
     }
 
     /**
@@ -249,7 +230,7 @@ class Query
         $result = $this->query($sql, $bind, $obj);
 
         // 触发查询事件
-        $this->trigger('select', $options);
+        Db::trigger('select', $this->connection, $options);
 
         return $result;
     }
@@ -304,7 +285,7 @@ class Query
         }
         $result = $this->execute($sql, $bind);
         // 触发更新事件
-        $this->trigger('update', $options);
+        Db::trigger('update', $this->connection, $options);
 
         return $result;
     }
@@ -357,7 +338,7 @@ class Query
         $result = (false === $sql) ? fasle : $this->execute($sql, $bind);
 
         // 触发写入事件
-        $this->trigger('insert', $options);
+        Db::trigger('insert', $this->connection, $options);
 
         // 执行成功，判断是否返回自增ID
         if ($result && $getLastInsID) {
@@ -392,7 +373,9 @@ class Query
         // 执行SQL
         $result = $this->execute($sql, $bind);
         // 触发写入事件
-        $this->trigger('insert', $options);
+        Db::trigger('insert', $this->connection, $options);
+
+        return $result;
     }
 
     /**
@@ -421,7 +404,7 @@ class Query
         // 执行SQL
         $result = $this->execute($sql, $bind);
         // 触发删除事件
-        $this->trigger('delete', $options);
+        Db::trigger('delete', $this->connection, $options);
 
         return $result;
     }
@@ -1318,20 +1301,5 @@ class Query
     private function getBuilder()
     {
         return new Builder($this->connection, $this);
-    }
-
-    /**
-     * 触发事件
-     *
-     * @param string $event   事件名
-     * @param mixed  $params  额外参数
-     * @return bool
-     */
-    private function trigger($event, $params = [])
-    {
-        if (isset(self::$event[$event])) {
-            $callback = self::$event[$event];
-            return Container::instance()->invoke($callback, [$params, $this]);
-        }
     }
 }

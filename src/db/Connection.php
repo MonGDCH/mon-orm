@@ -5,6 +5,7 @@ namespace mon\orm\db;
 use PDO;
 use Exception;
 use PDOException;
+use mon\orm\Db;
 use mon\orm\db\Query;
 use mon\orm\exception\MondbException;
 
@@ -107,7 +108,7 @@ class Connection
     public function __construct(array $config)
     {
         if (!empty($config)) {
-            $this->config = array_merge((array)$this->config, $config);
+            $this->config = array_merge((array) $this->config, $config);
         }
 
         $this->connect();
@@ -186,7 +187,7 @@ class Connection
      */
     public function getLastSql()
     {
-        return $this->getRealSql($this->queryStr, (array)$this->bind);
+        return $this->getRealSql($this->queryStr, (array) $this->bind);
     }
 
     /**
@@ -218,7 +219,7 @@ class Connection
     {
         try {
             if (!empty($config) && is_array($config)) {
-                $this->config = array_merge((array)$this->config, $config);
+                $this->config = array_merge((array) $this->config, $config);
             }
 
             // 生成mysql连接dsn
@@ -237,6 +238,9 @@ class Connection
                 $this->config['password'],
                 $this->config['params']
             );
+
+            // 触发链接事件
+            Db::trigger('connect', $this, $this->config);
 
             return $this;
         } catch (PDOException $e) {
@@ -296,6 +300,10 @@ class Connection
         }
         // 执行查询
         $this->PDOStatement->execute();
+
+        // 触发全局查询事件
+        Db::trigger('query', $this, $bind);
+
         // 返回结果集
         return $this->getResult($pdo, $procedure);
     }
@@ -332,6 +340,8 @@ class Connection
         }
         // 执行语句
         $this->PDOStatement->execute();
+        // 触发全局查询事件
+        Db::trigger('execute', $this, $bind);
         // 返回影响行数
         $this->numRows = $this->PDOStatement->rowCount();
         return $this->numRows;
@@ -487,7 +497,7 @@ class Connection
     public function getRealSql($sql, array $bind = [])
     {
         if (is_array($sql)) {
-            $sql = implode(';', (array)$sql);
+            $sql = implode(';', (array) $sql);
         }
 
         foreach ($bind as $key => $val) {
