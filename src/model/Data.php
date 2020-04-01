@@ -28,28 +28,28 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * 绑定的模型
      *
-     * @var [type]
+     * @var Model
      */
     protected $model;
 
     /**
      * 补充的数据字段
      *
-     * @var [type]
+     * @var array
      */
     protected $append;
 
     /**
      * 处理后的数据
      *
-     * @var [type]
+     * @var array
      */
     protected $formatData;
 
     /**
      * 构造方法
      *
-     * @param [type] $data  结果集
+     * @param mixed  $data  结果集
      * @param Model  $model 绑定的模型
      */
     public function __construct($data, Model $model, $append = [])
@@ -62,7 +62,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * 获取元数据
      *
-     * @param [type] $name 字段名
+     * @param string $name 字段名
      * @return void
      */
     public function getData($name = null)
@@ -76,7 +76,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * 获取绑定的模型
      *
-     * @return [type] [description]
+     * @return Model
      */
     public function getModel()
     {
@@ -86,7 +86,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * 是否为空
      *
-     * @return boolean [description]
+     * @return boolean
      */
     public function isEmpty()
     {
@@ -97,7 +97,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
      * 转换为数组输出, 并自动完成数据
      *
      * @param  boolean $new true则重新获取数据，不读取缓存
-     * @return [type]       [description]
+     * @return array
      */
     public function toArray($new = true)
     {
@@ -177,7 +177,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * 字符串输出
      *
-     * @return string [description]
+     * @return string
      */
     public function __toString()
     {

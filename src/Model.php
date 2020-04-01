@@ -4,6 +4,7 @@ namespace mon\orm;
 
 use Closure;
 use mon\orm\Db;
+use mon\orm\db\Query;
 use mon\orm\model\Data;
 use mon\orm\model\DataCollection;
 use mon\orm\exception\MondbException;
@@ -11,6 +12,16 @@ use mon\orm\exception\MondbException;
 /**
  * 模型基类
  *
+ * @mixin Query
+ * @method Query table(string $table) static 设置表名(含表前缀)
+ * @method Query where(mixed $field, string $op = null, mixed $condition = null) static 查询条件
+ * @method Query whereOr(mixed $field, string $op = null, mixed $condition = null) static 查询条件(OR)
+ * @method Query join(mixed $join, mixed $condition = null, string $type = 'INNER') static JOIN查询
+ * @method Query union(mixed $union, boolean $all = false) static UNION查询
+ * @method Query limit(mixed $offset, mixed $length = null) static 查询LIMIT
+ * @method Query order(mixed $field, string $order = null) static 查询ORDER
+ * @method Query field(mixed $field) static 指定查询字段
+ * @method Query getLastSql() static 获取最后执行的SQL
  * @author Mon 985558837@qq.com
  * @version v1.0
  */
@@ -61,7 +72,7 @@ abstract class Model
     /**
      * 获取错误信息
      *
-     * @return [type] [description]
+     * @return mixed 错误信息
      */
     public function getError()
     {
@@ -103,11 +114,11 @@ abstract class Model
         array_unshift($args, $this->db());
 
         if ($name instanceof Closure) {
-            return call_user_func_array($name, $args);
+            return call_user_func_array($name, (array) $args);
         }
         $method = 'scope' . ucfirst($name);
         if (method_exists($this, $method)) {
-            return call_user_func_array([$this, $method], $args);
+            return call_user_func_array([$this, $method], (array) $args);
         }
         throw new MondbException(
             'The scope is not found [' . $method . ']',

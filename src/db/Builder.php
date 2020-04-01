@@ -9,7 +9,25 @@ use mon\orm\exception\MondbException;
  */
 class Builder
 {
-    // 数据库表达式
+    /**
+     * DB链接实例
+     *
+     * @var Connection
+     */
+    protected $connection = null;
+
+    /**
+     * 查询构造器实例
+     *
+     * @var Query
+     */
+    protected $query = null;
+
+    /**
+     * 数据库表达式
+     *
+     * @var array
+     */
     protected $exp = [
         'eq'            => '=',
         'neq'           => '<>',
@@ -34,11 +52,39 @@ class Builder
         'not null'      => 'NOT NULL',
     ];
 
-    // SQL表达式
+    /**
+     * SQL表达式(select)
+     *
+     * @var string
+     */
     protected $selectSql    = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%UNION%%ORDER%%LIMIT%%LOCK%%COMMENT%';
+
+    /**
+     * SQL表达式(insert)
+     *
+     * @var string
+     */
     protected $insertSql    = '%INSERT% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+
+    /**
+     * SQL表达式(insertAll)
+     *
+     * @var string
+     */
     protected $insertAllSql = '%INSERT% INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
+
+    /**
+     * SQL表达式(update)
+     *
+     * @var string
+     */
     protected $updateSql    = 'UPDATE %TABLE% %JOIN% SET %SET% %WHERE% %ORDER%%LIMIT% %LOCK%%COMMENT%';
+
+    /**
+     * SQL表达式(delete)
+     *
+     * @var string
+     */
     protected $deleteSql    = 'DELETE FROM %TABLE% %USING% %JOIN% %WHERE% %ORDER%%LIMIT% %LOCK%%COMMENT%';
 
     /**
@@ -416,12 +462,12 @@ class Builder
     /**
      * where子单元分析
      *
-     * @param  [type] $field    [description]
-     * @param  [type] $val      [description]
-     * @param  string $rule     [description]
-     * @param  [type] $options  [description]
-     * @param  [type] $bindName [description]
-     * @return [type]           [description]
+     * @param  mixed  $field    字段
+     * @param  mixed  $val      值
+     * @param  string $rule     规则
+     * @param  mixed  $options  查询参数
+     * @param  mixed  $bindName 绑定值
+     * @return string
      */
     protected function parseWhereItem($field, $val, $rule = '', $options = [], $bindName = null)
     {
@@ -516,7 +562,6 @@ class Builder
      * value分析
      *
      * @param mixed     $value
-     * @param string    $field
      * @return string|array
      */
     protected function parseValue($value, $field = '')

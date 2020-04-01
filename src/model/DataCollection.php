@@ -27,7 +27,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     /**
      * 构造方法
      *
-     * @param [type] $data  结果集
+     * @param mixed  $data  结果集
      * @param Model  $model 绑定的模型
      */
     public function __construct($data)
@@ -38,7 +38,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     /**
      * 获取元数据
      *
-     * @return [type] [description]
+     * @return mixed
      */
     public function getData()
     {
@@ -58,7 +58,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     /**
      * 转换为数组输出, 并自动完成数据
      *
-     * @return [type] [description]
+     * @return array
      */
     public function toArray()
     {

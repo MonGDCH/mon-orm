@@ -22,7 +22,7 @@ class Query
     /**
      * DB链接实例
      *
-     * @var null
+     * @var Connection
      */
     protected $connection = null;
 
@@ -36,7 +36,7 @@ class Query
     /**
      * 查询表
      *
-     * @var [type]
+     * @var string
      */
     protected $table;
 
@@ -50,14 +50,14 @@ class Query
     /**
      * 参数绑定标识位
      *
-     * @var [type]
+     * @var array
      */
     protected $bind = [];
 
     /**
      * 当前模型对象
      *
-     * @var [type]
+     * @var null
      */
     protected $model;
 
@@ -76,7 +76,7 @@ class Query
      * 指定模型
      *
      * @param Model $model 模型对象实例
-     * @return $this
+     * @return Query 当前实例自身
      */
     public function model(Model $model)
     {
@@ -87,7 +87,7 @@ class Query
     /**
      * 获取当前的模型对象
      *
-     * @return Model|null
+     * @return Model|null   当前操作模型对象
      */
     public function getModel()
     {
@@ -97,8 +97,8 @@ class Query
     /**
      * 获取当前的查询参数
      *
-     * @param  [type] $name 参数名称
-     * @return [type]       [description]
+     * @param  string $name 参数名称
+     * @return mixed 查询参数
      */
     public function getOptions($name = '')
     {
@@ -115,6 +115,7 @@ class Query
      * @param string      $sql    sql指令
      * @param array       $bind   参数绑定
      * @param bool|string $class  指定返回的数据集对象
+     * @return mixed 数据集
      */
     public function query($sql, $bind = [], $class = false)
     {
@@ -126,6 +127,7 @@ class Query
      *
      * @param string $sql  sql指令
      * @param array  $bind 参数绑定
+     * @return mixed 数据集影响行数
      */
     public function execute($sql, $bind = [])
     {
@@ -136,7 +138,7 @@ class Query
      * 获取最近插入的ID
      *
      * @param string $sequence 自增序列名
-     * @return string
+     * @return integer 最后写入的ID
      */
     public function getLastInsID($sequence = null)
     {
@@ -146,7 +148,7 @@ class Query
     /**
      * 获取最近一次查询的sql语句
      *
-     * @return string
+     * @return string 最后执行的SQL
      */
     public function getLastSql()
     {
@@ -186,8 +188,8 @@ class Query
     /**
      * 事务处理，采用回调函数实现
      *
-     * @param  [type] $callback 回调函数
-     * @return [type]           [description]
+     * @param  Closure $callback 回调函数
+     * @return mixed 结果集
      */
     public function action($callback)
     {
@@ -211,7 +213,7 @@ class Query
     /**
      * 查询数据
      *
-     * @return [type] [description]
+     * @return array 查询结果集
      */
     public function select()
     {
@@ -238,7 +240,7 @@ class Query
     /**
      * 查找单条记录
      *
-     * @return [type] [description]
+     * @return array 查询结果集
      */
     public function find()
     {
@@ -255,7 +257,7 @@ class Query
      * 更新查询
      *
      * @param  array  $data 更新的数据
-     * @return [type]       [description]
+     * @return integer  影响行数
      */
     public function update(array $data = [])
     {
@@ -293,8 +295,9 @@ class Query
     /**
      * 字段自增
      *
-     * @param [type]  $field 字段名
+     * @param string  $field 字段名
      * @param integer $step  步长
+     * @return integer 影响行数
      */
     public function setInc($field, $step = 1)
     {
@@ -304,8 +307,9 @@ class Query
     /**
      * 字段自减
      *
-     * @param [type]  $field 字段名
+     * @param string  $field 字段名
      * @param integer $step  步长
+     * @return integer 影响行数
      */
     public function setDec($field, $step = 1)
     {
@@ -319,7 +323,7 @@ class Query
      * @param  boolean $replace      是否replace
      * @param  boolean $getLastInsID 返回自增主键ID
      * @param  string  $key          自增主键名
-     * @return [type]                [description]
+     * @return integer 影响行数或自增ID  
      */
     public function insert(array $data = [], $replace = false, $getLastInsID = false, $key = null)
     {
@@ -335,7 +339,7 @@ class Query
         }
 
         // 执行操作
-        $result = (false === $sql) ? fasle : $this->execute($sql, $bind);
+        $result = (false === $sql) ? false : $this->execute($sql, $bind);
 
         // 触发写入事件
         Db::trigger('insert', $this->connection, $options);
@@ -353,7 +357,7 @@ class Query
      *
      * @param  array   $data    数据集
      * @param  boolean $replace 是否replace
-     * @return [type]           [description]
+     * @return integer  影响行数
      */
     public function insertAll(array $data = [], $replace = false)
     {
@@ -381,7 +385,7 @@ class Query
     /**
      * 操作操作
      *
-     * @return [type] [description]
+     * @return integer  影响行数
      */
     public function delete()
     {
@@ -413,7 +417,7 @@ class Query
      * COUNT查询
      * 
      * @param string $field 字段名
-     * @return integer|string
+     * @return integer|string   结果集
      */
     public function count($field = '*')
     {
@@ -430,7 +434,7 @@ class Query
      * SUM查询
      * 
      * @param string $field 字段名
-     * @return float|int
+     * @return float|int    结果集
      */
     public function sum($field)
     {
@@ -447,7 +451,7 @@ class Query
      * MIN查询
      *
      * @param string $field 字段名
-     * @return mixed
+     * @return mixed  结果集
      */
     public function min($field)
     {
@@ -464,7 +468,7 @@ class Query
      * MAX查询
      * 
      * @param string $field 字段名
-     * @return mixed
+     * @return mixed    结果集
      */
     public function max($field)
     {
@@ -481,7 +485,7 @@ class Query
      * AVG查询
      * 
      * @param string $field 字段名
-     * @return float|int
+     * @return mixed    结果集
      */
     public function avg($field)
     {
@@ -497,7 +501,7 @@ class Query
     /**
      * 调试模式,只返回SQL
      *
-     * @return [type] [description]
+     * @return Query    当前实例自身
      */
     public function debug()
     {
@@ -508,7 +512,7 @@ class Query
     /**
      * 获取PDO结果集,不解析
      *
-     * @return [type] [description]
+     * @return Query    当前实例自身
      */
     public function getObj()
     {
@@ -519,8 +523,8 @@ class Query
     /**
      * 设置表名(含表前缀)
      *
-     * @param  [type] $table 表名
-     * @return [type]        [description]
+     * @param  string $table 表名
+     * @return Query    当前实例自身
      */
     public function table($table)
     {
@@ -555,8 +559,8 @@ class Query
     /**
      * 指定数据表别名
      *
-     * @param mixed $alias 数据表别名
-     * @return $this
+     * @param string $alias 数据表别名
+     * @return Query    当前实例自身
      */
     public function alias($alias)
     {
@@ -576,8 +580,8 @@ class Query
     /**
      * 查询字符串
      *
-     * @param  [type] $field [description]
-     * @return [type]        [description]
+     * @param  string|array $field 查询字段
+     * @return Query    当前实例自身
      */
     public function field($field)
     {
@@ -604,7 +608,7 @@ class Query
      *
      * @param mixed $offset 起始位置
      * @param mixed $length 查询数量
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function limit($offset, $length = null)
     {
@@ -621,7 +625,7 @@ class Query
      *
      * @param string|array $field 排序字段
      * @param string       $order 排序
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function order($field, $order = '')
     {
@@ -651,7 +655,7 @@ class Query
      * 指定group查询
      *
      * @param string $group GROUP
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function group($group)
     {
@@ -663,7 +667,7 @@ class Query
      * 指定having查询
      *
      * @param string $having having
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function having($having)
     {
@@ -677,7 +681,7 @@ class Query
      * @param mixed  $join      关联的表名
      * @param mixed  $condition 条件
      * @param string $type      JOIN类型
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function join($join, $condition = null, $type = 'INNER')
     {
@@ -703,7 +707,7 @@ class Query
      * @param mixed $field     查询字段
      * @param mixed $op        查询表达式
      * @param mixed $condition 查询条件
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function where($field, $op = null, $condition = null)
     {
@@ -719,7 +723,7 @@ class Query
      * @param mixed $field     查询字段
      * @param mixed $op        查询表达式
      * @param mixed $condition 查询条件
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereOr($field, $op = null, $condition = null)
     {
@@ -735,7 +739,7 @@ class Query
      * @param mixed $field     查询字段
      * @param mixed $op        查询表达式
      * @param mixed $condition 查询条件
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereXor($field, $op = null, $condition = null)
     {
@@ -751,7 +755,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereLike($field, $condition, $logic = 'AND')
     {
@@ -765,7 +769,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNotLike($field, $condition, $logic = 'AND')
     {
@@ -779,7 +783,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereBetween($field, $condition, $logic = 'AND')
     {
@@ -793,7 +797,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNotBetween($field, $condition, $logic = 'AND')
     {
@@ -806,7 +810,7 @@ class Query
      *
      * @param mixed  $field 查询字段
      * @param string $logic 查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNull($field, $logic = 'AND')
     {
@@ -819,7 +823,7 @@ class Query
      *
      * @param mixed  $field 查询字段
      * @param string $logic 查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNotNull($field, $logic = 'AND')
     {
@@ -832,7 +836,7 @@ class Query
      *
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereExists($condition, $logic = 'AND')
     {
@@ -845,7 +849,7 @@ class Query
      *
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNotExists($condition, $logic = 'AND')
     {
@@ -859,7 +863,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereIn($field, $condition, $logic = 'AND')
     {
@@ -873,7 +877,7 @@ class Query
      * @param mixed  $field     查询字段
      * @param mixed  $condition 查询条件
      * @param string $logic     查询逻辑 and or xor
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function whereNotIn($field, $condition, $logic = 'AND')
     {
@@ -886,7 +890,7 @@ class Query
      *
      * @param mixed $field 字段名或者数据
      * @param mixed $value 字段值
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function data($field, $value = null)
     {
@@ -902,7 +906,7 @@ class Query
      * 查询lock
      *
      * @param bool|string $lock 是否lock
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function lock($lock = false)
     {
@@ -914,7 +918,7 @@ class Query
      * distinct查询
      *
      * @param string $distinct 是否唯一
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function distinct($distinct)
     {
@@ -927,7 +931,7 @@ class Query
      *
      * @param mixed   $union
      * @param boolean $all
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function union($union, $all = false)
     {
@@ -945,7 +949,7 @@ class Query
      * 指定强制索引
      *
      * @param string $force 索引名称
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function force($force)
     {
@@ -958,7 +962,7 @@ class Query
      * 查询注释
      *
      * @param string $comment 注释
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function comment($comment)
     {
@@ -972,7 +976,7 @@ class Query
      *
      * @param string|array $field 字段名
      * @param integer      $step  增长值
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function inc($field, $step = 1)
     {
@@ -988,7 +992,7 @@ class Query
      *
      * @param string|array $field 字段名
      * @param integer      $step  增长值
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function dec($field, $step = 1)
     {
@@ -1005,7 +1009,7 @@ class Query
      * @param mixed   $key   参数名
      * @param mixed   $value 绑定变量值
      * @param integer $type  绑定类型
-     * @return $this
+     * @return Query    当前实例自身
      */
     public function bind($key, $value = false, $type = PDO::PARAM_STR)
     {
@@ -1219,10 +1223,10 @@ class Query
     /**
      * 模型类save方法支持
      *
-     * @param  [type] $data     操作数据
-     * @param  [type] $where    where条件，存在则为更新，反之新增
-     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @return [type] [description]
+     * @param  array $data     操作数据
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @return mixed 结果集
      */
     public function save($data, $where = null, $sequence = null)
     {
@@ -1245,10 +1249,8 @@ class Query
     /**
      * 模型类get方法支持
      *
-     * @param  [type] $data     操作数据
-     * @param  [type] $where    where条件，存在则为更新，反之新增
-     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @return [type] [description]
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @return mixed 结果集
      */
     public function get($where = [])
     {
@@ -1271,10 +1273,8 @@ class Query
     /**
      * 模型类all方法支持
      *
-     * @param  [type] $data     操作数据
-     * @param  [type] $where    where条件，存在则为更新，反之新增
-     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @return [type] [description]
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @return mixed 结果集
      */
     public function all($where = [])
     {
@@ -1296,7 +1296,8 @@ class Query
 
     /**
      * 获取Builder类对象实例
-     * @return [type] [description]
+     *
+     * @return Builder 查询语句构造器实例
      */
     private function getBuilder()
     {

@@ -41,7 +41,7 @@ class Connection
     /**
      * 绑定值
      *
-     * @var [type]
+     * @var array
      */
     protected $bind = [];
 
@@ -103,7 +103,7 @@ class Connection
     /**
      * 构造方法
      *
-     * @param [type] $config [description]
+     * @param array $config 数据库配置信息
      */
     public function __construct(array $config)
     {
@@ -141,7 +141,7 @@ class Connection
     /**
      * 获取Query对象
      *
-     * @return [type] [description]
+     * @return Query 查询构造器对象实例
      */
     public function getQuery()
     {
@@ -173,7 +173,7 @@ class Connection
      * 获取最后插入记录的ID
      *
      * @param  string|null $pk 自增序列名
-     * @return [type]          [description]
+     * @return mixed    最后新增的ID 
      */
     public function getLastInsID($pk = null)
     {
@@ -183,7 +183,7 @@ class Connection
     /**
      * 获取最近一次查询的sql语句
      *
-     * @return [type] [description]
+     * @return  string 最后执行的sql语句
      */
     public function getLastSql()
     {
@@ -193,7 +193,7 @@ class Connection
     /**
      * 获取最近的错误信息
      *
-     * @return string
+     * @return string 错误信息
      */
     public function getQueryError()
     {
@@ -213,7 +213,7 @@ class Connection
      * 链接DB
      *
      * @param  array  $config 配置信息
-     * @return [type]         [description]
+     * @return Connection 实例自身
      */
     public function connect(array $config = [])
     {
@@ -255,7 +255,7 @@ class Connection
     /**
      * 获取DB链接
      *
-     * @return [type] [description]
+     * @return mixed    数据库链接
      */
     public function getLink()
     {
@@ -272,7 +272,7 @@ class Connection
      * @param  string  $sql  SQL语句
      * @param  array   $bind 绑定的值
      * @param  boolean $pdo  是否返回PDO对象
-     * @return [type]        [description]
+     * @return mixed   查询结果集
      */
     public function query($sql, array $bind = [], $pdo = false)
     {
@@ -313,7 +313,7 @@ class Connection
      *
      * @param  string $sql  SQL语句
      * @param  array  $bind 绑定的值
-     * @return [type]       [description]
+     * @return integer 影响行数
      */
     public function execute($sql, array $bind = [])
     {
@@ -350,7 +350,7 @@ class Connection
     /**
      * 开启事务
      *
-     * @return [type] [description]
+     * @return void
      */
     public function startTrans()
     {
@@ -366,7 +366,7 @@ class Connection
     /**
      * 提交事务
      *
-     * @return [type] [description]
+     * @return void
      */
     public function commit()
     {
@@ -395,8 +395,8 @@ class Connection
     /**
      * 获取表字段信息
      *
-     * @param  [type] $table 表名
-     * @return [type]        [description]
+     * @param  string $table 表名
+     * @return array 表字段信息
      */
     public function getFields($table)
     {
@@ -424,15 +424,15 @@ class Connection
     /**
      * 获取表信息
      *
-     * @param  [type] $database 数据库名
-     * @return [type]           [description]
+     * @param  string $database 数据库名
+     * @return array 表信息
      */
     public function getTables($database = '')
     {
-        $sql    = !empty($dbName) ? 'SHOW TABLES FROM ' . $database : 'SHOW TABLES';
-        $pdoStatement    = $this->query($sql, [], true);
+        $sql = !empty($dbName) ? 'SHOW TABLES FROM ' . $database : 'SHOW TABLES';
+        $pdoStatement = $this->query($sql, [], true);
         $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        $info   = [];
+        $info = [];
         foreach ($result as $key => $val) {
             $info[$key] = current($val);
         }
@@ -444,12 +444,12 @@ class Connection
      * SQL性能分析
      *
      * @param  string $sql SQL语句
-     * @return [type]      [description]
+     * @return array  SQL分析结果
      */
     public function explain($sql)
     {
         $sql = 'EXPLAIN ' . $sql;
-        $pdoStatement    = $this->query($sql, [], true);
+        $pdoStatement = $this->query($sql, [], true);
         $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         return array_change_key_case($result);
     }
@@ -458,7 +458,7 @@ class Connection
      * PDO自带安全过滤
      *
      * @param  string $value 需要过滤的值
-     * @return [type]        [description]
+     * @return string   过滤后的值
      */
     public function quote($value)
     {
@@ -468,7 +468,7 @@ class Connection
     /**
      * 断开链接
      *
-     * @return [type] [description]
+     * @return Connection   自身实例
      */
     public function close()
     {
@@ -480,7 +480,7 @@ class Connection
     /**
      * 释放查询结果集
      * 
-     * @return [type] [description]
+     * @return void
      */
     public function free()
     {
@@ -492,7 +492,7 @@ class Connection
      *
      * @param string    $sql  带参数绑定的sql语句
      * @param array     $bind 参数绑定列表
-     * @return string
+     * @return string   拼装后的sql语句
      */
     public function getRealSql($sql, array $bind = [])
     {
@@ -580,7 +580,7 @@ class Connection
      *
      * @param bool   $pdo 是否返回PDOStatement
      * @param bool   $procedure 是否存储过程
-     * @return PDOStatement|array
+     * @return PDOStatement|array 数据集
      */
     protected function getResult($pdo = false, $procedure = false)
     {
@@ -600,7 +600,7 @@ class Connection
     /**
      * 获得存储过程数据集
      *
-     * @return array
+     * @return array 存储过程数据集
      */
     protected function procedure()
     {
@@ -618,8 +618,8 @@ class Connection
     /**
      * 生成定义保存点的SQL
      *
-     * @param $name
-     * @return string
+     * @param string $name
+     * @return string 执行的SQL
      */
     protected function parseSavepoint($name)
     {
@@ -629,8 +629,8 @@ class Connection
     /**
      * 生成回滚到保存点的SQL
      *
-     * @param $name
-     * @return string
+     * @param string $name
+     * @return string 执行的SQL
      */
     protected function parseSavepointRollBack($name)
     {
