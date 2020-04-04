@@ -13,6 +13,9 @@ use mon\orm\exception\MondbException;
  * 模型基类
  *
  * @mixin Query
+ * @method Query startTrans() static 开启事务
+ * @method Query commit() static 提交事务
+ * @method Query rollback() static 回滚事务
  * @method Query table(string $table) static 设置表名(含表前缀)
  * @method Query where(mixed $field, string $op = null, mixed $condition = null) static 查询条件
  * @method Query whereOr(mixed $field, string $op = null, mixed $condition = null) static 查询条件(OR)
@@ -23,7 +26,7 @@ use mon\orm\exception\MondbException;
  * @method Query field(mixed $field) static 指定查询字段
  * @method Query getLastSql() static 获取最后执行的SQL
  * @author Mon 985558837@qq.com
- * @version v1.0
+ * @version v1.1
  */
 abstract class Model
 {

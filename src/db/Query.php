@@ -702,6 +702,30 @@ class Query
     }
 
     /**
+     * USING支持 用于多表删除
+     *
+     * @param mixed $using USING
+     * @return Query    当前实例自身
+     */
+    public function using($using)
+    {
+        $this->options['using'] = $using;
+        return $this;
+    }
+
+    /**
+     * 设置查询的额外参数
+     *
+     * @param string $extra 额外信息
+     * @return Query    当前实例自身
+     */
+    public function extra($extra)
+    {
+        $this->options['extra'] = $extra;
+        return $this;
+    }
+
+    /**
      * 指定AND查询条件
      *
      * @param mixed $field     查询字段
@@ -1078,8 +1102,13 @@ class Query
                 }
             } elseif ($field && is_string($field)) {
                 // 字符串查询
-                $where[$field] = ['null', ''];
-                $this->options['multi'][$logic][$field][] = $where[$field];
+                if (preg_match('/[,=\<\'\"\(\s]/', $field)) {
+                    // 手写where条件，不做处理，直接写入
+                    $this->options['where'][$logic][] = $field;
+                } else {
+                    $where[$field] = ['null', ''];
+                    $this->options['multi'][$logic][$field][] = $where[$field];
+                }
             }
         } elseif (is_array($op)) {
             $where[$field] = $param;

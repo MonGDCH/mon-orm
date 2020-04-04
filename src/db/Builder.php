@@ -57,35 +57,35 @@ class Builder
      *
      * @var string
      */
-    protected $selectSql    = 'SELECT%DISTINCT% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%UNION%%ORDER%%LIMIT%%LOCK%%COMMENT%';
+    protected $selectSql = 'SELECT%DISTINCT%%EXTRA% %FIELD% FROM %TABLE%%FORCE%%JOIN%%WHERE%%GROUP%%HAVING%%UNION%%ORDER%%LIMIT%%LOCK%%COMMENT%';
 
     /**
      * SQL表达式(insert)
      *
      * @var string
      */
-    protected $insertSql    = '%INSERT% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+    protected $insertSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
 
     /**
      * SQL表达式(insertAll)
      *
      * @var string
      */
-    protected $insertAllSql = '%INSERT% INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
+    protected $insertAllSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
 
     /**
      * SQL表达式(update)
      *
      * @var string
      */
-    protected $updateSql    = 'UPDATE %TABLE% %JOIN% SET %SET% %WHERE% %ORDER%%LIMIT% %LOCK%%COMMENT%';
+    protected $updateSql = 'UPDATE%EXTRA% %TABLE% %JOIN% SET %SET% %WHERE% %ORDER%%LIMIT% %LOCK%%COMMENT%';
 
     /**
      * SQL表达式(delete)
      *
      * @var string
      */
-    protected $deleteSql    = 'DELETE FROM %TABLE% %USING% %JOIN% %WHERE% %ORDER%%LIMIT% %LOCK%%COMMENT%';
+    protected $deleteSql = 'DELETE%EXTRA% FROM %TABLE%%USING%%JOIN%%WHERE%%ORDER%%LIMIT% %LOCK%%COMMENT%';
 
     /**
      * 构造方法
@@ -108,10 +108,11 @@ class Builder
     public function select(array $options = [])
     {
         $sql = str_replace(
-            ['%TABLE%', '%DISTINCT%', '%FIELD%', '%JOIN%', '%WHERE%', '%GROUP%', '%HAVING%', '%ORDER%', '%LIMIT%', '%UNION%', '%LOCK%', '%COMMENT%', '%FORCE%'],
+            ['%TABLE%', '%DISTINCT%', '%EXTRA%', '%FIELD%', '%JOIN%', '%WHERE%', '%GROUP%', '%HAVING%', '%ORDER%', '%LIMIT%', '%UNION%', '%LOCK%', '%COMMENT%', '%FORCE%'],
             [
                 $this->parseTable($options['table'], $options),
                 $this->parseDistinct($options['distinct']),
+                $this->parseExtra($options['extra']),
                 $this->parseField($options['field'], $options),
                 $this->parseJoin($options['join'], $options),
                 $this->parseWhere($options['where'], $options),
@@ -149,10 +150,11 @@ class Builder
         $values = array_values($data);
 
         $sql = str_replace(
-            ['%INSERT%', '%TABLE%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
             [
                 $replace ? 'REPLACE' : 'INSERT',
                 $this->parseTable($options['table'], $options),
+                $this->parseExtra($options['extra']),
                 implode(' , ', $fields),
                 implode(' , ', $values),
                 $this->parseComment($options['comment']),
@@ -199,10 +201,11 @@ class Builder
         }
 
         return str_replace(
-            ['%INSERT%', '%TABLE%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
             [
                 $replace ? 'REPLACE' : 'INSERT',
                 $this->parseTable($options['table'], $options),
+                $this->parseExtra($options['extra']),
                 implode(' , ', $insertFields),
                 implode(' , ', $values),
                 $this->parseComment($options['comment']),
@@ -220,7 +223,6 @@ class Builder
      */
     public function update($data, $options)
     {
-        $table = $this->parseTable($options['table'], $options);
         $data  = $this->parseData($data, $options);
         if (empty($data)) {
             return '';
@@ -230,9 +232,10 @@ class Builder
         }
 
         $sql = str_replace(
-            ['%TABLE%', '%SET%', '%JOIN%', '%WHERE%', '%ORDER%', '%LIMIT%', '%LOCK%', '%COMMENT%'],
+            ['%TABLE%', '%EXTRA%', '%SET%', '%JOIN%', '%WHERE%', '%ORDER%', '%LIMIT%', '%LOCK%', '%COMMENT%'],
             [
                 $this->parseTable($options['table'], $options),
+                $this->parseExtra($options['extra']),
                 implode(',', $set),
                 $this->parseJoin($options['join'], $options),
                 $this->parseWhere($options['where'], $options),
@@ -256,9 +259,10 @@ class Builder
     public function delete($options)
     {
         $sql = str_replace(
-            ['%TABLE%', '%USING%', '%JOIN%', '%WHERE%', '%ORDER%', '%LIMIT%', '%LOCK%', '%COMMENT%'],
+            ['%TABLE%', '%EXTRA%', '%USING%', '%JOIN%', '%WHERE%', '%ORDER%', '%LIMIT%', '%LOCK%', '%COMMENT%'],
             [
                 $this->parseTable($options['table'], $options),
+                $this->parseExtra($options['extra']),
                 !empty($options['using']) ? ' USING ' . $this->parseTable($options['using'], $options) . ' ' : '',
                 $this->parseJoin($options['join'], $options),
                 $this->parseWhere($options['where'], $options),
@@ -446,6 +450,9 @@ class Builder
                         $item[] = $this->parseWhereItem($k, $value, '', $options);
                     }
                     $str[] = ' ' . $key . ' ( ' . implode(' AND ', $item) . ' )';
+                } else if (is_int($field) && is_string($value)) {
+                    // 字符串直接写入的where条件
+                    $str[] = ' ' . $key . ' ( ' . $value . ' ) ';
                 } else {
                     // 对字段使用表达式查询
                     $field = is_string($field) ? $field : '';
@@ -761,5 +768,16 @@ class Builder
             }
         }
         return $result;
+    }
+
+    /**
+     * 查询额外参数分析
+     *
+     * @param  string $extra    额外参数
+     * @return string
+     */
+    protected function parseExtra($extra)
+    {
+        return preg_match('/^[\w]+$/i', $extra) ? ' ' . strtoupper($extra) : '';
     }
 }
