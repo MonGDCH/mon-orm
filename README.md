@@ -198,6 +198,11 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.1.4
+
+* 优化代码，增加注解
+* 增加duplicate、using、extra、page等方法
+
 ### 2.1.3
 
 * 优化代码，增强注解。

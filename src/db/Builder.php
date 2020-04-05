@@ -64,14 +64,14 @@ class Builder
      *
      * @var string
      */
-    protected $insertSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+    protected $insertSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES (%DATA%) %DUPLICATE%%COMMENT%';
 
     /**
      * SQL表达式(insertAll)
      *
      * @var string
      */
-    protected $insertAllSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
+    protected $insertAllSql = '%INSERT%%EXTRA% INTO %TABLE% (%FIELD%) VALUES %DATA% %DUPLICATE%%COMMENT%';
 
     /**
      * SQL表达式(update)
@@ -150,13 +150,14 @@ class Builder
         $values = array_values($data);
 
         $sql = str_replace(
-            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%DUPLICATE%', '%COMMENT%'],
             [
                 $replace ? 'REPLACE' : 'INSERT',
                 $this->parseTable($options['table'], $options),
                 $this->parseExtra($options['extra']),
                 implode(' , ', $fields),
                 implode(' , ', $values),
+                $this->parseDuplicate($options['duplicate']),
                 $this->parseComment($options['comment']),
             ],
             $this->insertSql
@@ -201,13 +202,14 @@ class Builder
         }
 
         return str_replace(
-            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%DUPLICATE%', '%COMMENT%'],
             [
                 $replace ? 'REPLACE' : 'INSERT',
                 $this->parseTable($options['table'], $options),
                 $this->parseExtra($options['extra']),
                 implode(' , ', $insertFields),
                 implode(' , ', $values),
+                $this->parseDuplicate($options['duplicate']),
                 $this->parseComment($options['comment']),
             ],
             $this->insertAllSql
@@ -779,5 +781,33 @@ class Builder
     protected function parseExtra($extra)
     {
         return preg_match('/^[\w]+$/i', $extra) ? ' ' . strtoupper($extra) : '';
+    }
+
+    /**
+     * ON DUPLICATE KEY UPDATE 分析
+     *
+     * @param  mixed  $duplicate
+     * @return string
+     */
+    protected function parseDuplicate($duplicate)
+    {
+        if ('' == $duplicate) {
+            return '';
+        }
+        $updates = [];
+        if (is_string($duplicate)) {
+            $updates[] = $duplicate;
+        } else {
+            foreach ($duplicate as $key => $val) {
+                if (is_numeric($key)) {
+                    $val = $this->parseKey($val);
+                    $updates[] = $val . ' = VALUES(' . $val . ')';
+                } else {
+                    $updates[] = $this->parseKey($key) . " = " . $this->connection->quote($val);
+                }
+            }
+        }
+
+        return ' ON DUPLICATE KEY UPDATE ' . implode(' , ', $updates) . ' ';
     }
 }

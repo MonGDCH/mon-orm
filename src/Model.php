@@ -22,6 +22,7 @@ use mon\orm\exception\MondbException;
  * @method Query join(mixed $join, mixed $condition = null, string $type = 'INNER') static JOIN查询
  * @method Query union(mixed $union, boolean $all = false) static UNION查询
  * @method Query limit(mixed $offset, mixed $length = null) static 查询LIMIT
+ * @method Query page(integer $page, integer $length) static 分页查询
  * @method Query order(mixed $field, string $order = null) static 查询ORDER
  * @method Query field(mixed $field) static 指定查询字段
  * @method Query getLastSql() static 获取最后执行的SQL

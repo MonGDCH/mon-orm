@@ -621,6 +621,21 @@ class Query
     }
 
     /**
+     * 分页查询
+     *
+     * @param integer $page     当前页数，从1开始
+     * @param integer $length   每页记录条数
+     * @return Query  当前实例自身
+     */
+    public function page($page, $length)
+    {
+        $page = intval($page);
+        $page = $page > 0 ? ($page - 1) : 0;
+        $length = intval($length);
+        return $this->limit($page * $length, $length);
+    }
+
+    /**
      * 指定排序 order('id','desc') 或者 order(['id'=>'desc','create_time'=>'desc'])
      *
      * @param string|array $field 排序字段
@@ -704,7 +719,7 @@ class Query
     /**
      * USING支持 用于多表删除
      *
-     * @param mixed $using USING
+     * @param string|array $using USING
      * @return Query    当前实例自身
      */
     public function using($using)
@@ -722,6 +737,18 @@ class Query
     public function extra($extra)
     {
         $this->options['extra'] = $extra;
+        return $this;
+    }
+
+    /**
+     * 设置DUPLICATE
+     *
+     * @param array|string $duplicate DUPLICATE信息
+     * @return Query    当前实例自身
+     */
+    public function duplicate($duplicate)
+    {
+        $this->options['duplicate'] = $duplicate;
         return $this;
     }
 
