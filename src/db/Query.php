@@ -1266,7 +1266,7 @@ class Query
             }
         }
 
-        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment'] as $name) {
+        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment', 'extra', 'using', 'duplicate'] as $name) {
             if (!isset($options[$name])) {
                 $options[$name] = '';
             }
