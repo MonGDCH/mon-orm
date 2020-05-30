@@ -89,7 +89,7 @@ abstract class Model
      * 获取DB实例
      *
      * @param boolean $newLink 是否重新创建链接
-     * @return void
+     * @return Query
      */
     public function db($newLink = false)
     {
@@ -108,9 +108,9 @@ abstract class Model
     /**
      * 设置查询场景, 相当于查询前置条件
      *
-     * @param  [type] $name         场景名称或者闭包函数
-     * @param  [type] $args         可变传参
-     * @return \mon\db\Connection   返回DB操作实例
+     * @param  string|Closure $name 场景名称或者闭包函数
+     * @param  mixed $args  可变传参
+     * @return Query    返回DB操作实例
      */
     public function scope($name, ...$args)
     {
@@ -133,11 +133,11 @@ abstract class Model
     /**
      * 保存数据
      *
-     * @param  [type] $data     操作数据
-     * @param  [type] $where    where条件，存在则为更新，反之新增
-     * @param  [type] $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @param  [type] $query    查询对象实例
-     * @return [type]           [description]
+     * @param  array $data     操作数据
+     * @param  mixed $where    where条件，存在则为更新，反之新增
+     * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @param  mixed $query    查询对象实例
+     * @return mixed
      */
     public function save($data, $where = null, $sequence = null, $query = null)
     {
@@ -150,9 +150,9 @@ abstract class Model
     /**
      * 获取一条数据
      *
-     * @param  where  $where    where条件
-     * @param  [type] $db       查询对象实例
-     * @return \mon\model\Data  数据集对象
+     * @param  array $where    where条件
+     * @param  mixed $db       查询对象实例
+     * @return \mon\orm\model\Data  数据集对象
      */
     public function get($where = [], $db = null)
     {
@@ -168,9 +168,9 @@ abstract class Model
     /**
      * 获取多条数据
      *
-     * @param  where  $where    where条件
-     * @param  [type] $db       查询对象实例
-     * @return \mon\model\Data  数据集对象
+     * @param  array  $where    where条件
+     * @param  mixed  $db 查询对象实例
+     * @return \mon\orm\model\DataCollection  数据集对象
      */
     public function all($where = [], $db = null)
     {
@@ -196,9 +196,10 @@ abstract class Model
     /**
      * 更新数据
      *
-     * @param  [type] $where where条件
-     * @param  [type] $db    查询对象实例
-     * @return [type]        [description]
+     * @param  array $data   操作数据
+     * @param  mixed $where  where条件
+     * @param  mixed $db     查询对象实例
+     * @return mixed
      */
     protected function updateData($data, $where, $db = null)
     {
@@ -215,9 +216,10 @@ abstract class Model
     /**
      * 新增数据
      *
-     * @param  [type] $sequence 自增序列名
-     * @param  [type] $sequence 查询对象实例
-     * @return [type]           [description]
+     * @param  array $data 操作数据
+     * @param  mixed $sequence 自增序列名
+     * @param  mixed $sequence 查询对象实例
+     * @return mixed
      */
     protected function insertData($data, $sequence, $db = null)
     {
@@ -235,10 +237,10 @@ abstract class Model
     /**
      * 设置器，设置修改操作数据
      *
-     * @param [type] $name  属性名
-     * @param [type] $value 属性值
+     * @param string $name  属性名
+     * @param mixed  $value 属性值
      * @param array  $data  元数据
-     * @return $this
+     * @return mixed
      */
     public function setAttr($name, $value = null, $data = [])
     {
@@ -253,9 +255,10 @@ abstract class Model
     /**
      * 获取器, 修改获取数据
      *
-     * @param  [type] $name  属性名
-     * @param  [type] $value 属性值
+     * @param  string $name  属性名
+     * @param  mixed  $value 属性值
      * @param  array  $data  元数据
+     * @return mixed
      */
     public function getAttr($name, $value = null, $data = [])
     {
@@ -274,7 +277,7 @@ abstract class Model
      * @see v2.0.3 修复未定义自动处理的字段也自动处理的BUG
      * @param  array  $auto 自动补全的字段
      * @param  array  $data 数据数据源
-     * @return [type]       [description]
+     * @return mixed
      */
     protected function autoCompleteData($auto = [], $data = [])
     {
@@ -294,8 +297,8 @@ abstract class Model
     /**
      * 检测命名, 转换下划线命名规则为驼峰法命名规则
      *
-     * @param  [type] $name 字段名称
-     * @return [type]       [description]
+     * @param  string $name 字段名称
+     * @return string
      */
     protected function parseAttrName($name)
     {
@@ -308,9 +311,9 @@ abstract class Model
     /**
      * 动态调用
      * 
-     * @param  [type] $method 回调方法
-     * @param  [type] $args   参数
-     * @return [type]         [description]
+     * @param  mixed $method 回调方法
+     * @param  mixed $args   参数
+     * @return mixed
      */
     public function __call($method, $args)
     {
@@ -320,9 +323,9 @@ abstract class Model
     /**
      * 静态调用
      *
-     * @param  [type] $method 回调方法
-     * @param  [type] $args   参数
-     * @return [type]         [description]
+     * @param  mixed $method 回调方法
+     * @param  mixed $args   参数
+     * @return mixed
      */
     public static function __callStatic($method, $args)
     {

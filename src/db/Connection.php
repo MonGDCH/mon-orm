@@ -20,14 +20,14 @@ class Connection
     /**
      * PDO链接
      *
-     * @var null
+     * @var PDO
      */
     protected $link = null;
 
     /**
      * 查询结果集
      *
-     * @var null
+     * @var PDOStatement
      */
     protected $PDOStatement = null;
 

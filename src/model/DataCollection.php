@@ -28,7 +28,6 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
      * 构造方法
      *
      * @param mixed  $data  结果集
-     * @param Model  $model 绑定的模型
      */
     public function __construct($data)
     {
@@ -48,7 +47,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     /**
      * 是否为空
      *
-     * @return boolean [description]
+     * @return boolean
      */
     public function isEmpty()
     {
@@ -64,7 +63,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     {
         return array_map(function ($value) {
             return ($value instanceof Data || $value instanceof self) ? $value->toArray() : $value;
-        }, (array)$this->data);
+        }, (array) $this->data);
     }
 
     /**
@@ -81,24 +80,42 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
     /**
      * 字符串输出
      *
-     * @return string [description]
+     * @return string
      */
     public function __toString()
     {
         return $this->toJson();
     }
 
-    // ArrayAccess相关处理方法
+    /**
+     * ArrayAccess相关处理方法, 判断是否存在某个值
+     *
+     * @param string $offset
+     * @return boolean
+     */
     public function offsetExists($offset)
     {
-        return array_key_exists($offset, (array)$this->data);
+        return array_key_exists($offset, (array) $this->data);
     }
 
+    /**
+     * ArrayAccess相关处理方法, 获取某个值
+     *
+     * @param string $offset
+     * @return boolean
+     */
     public function offsetGet($offset)
     {
         return $this->data[$offset];
     }
 
+    /**
+     * ArrayAccess相关处理方法, 设置某个值
+     *
+     * @param mixed $offset
+     * @param mixed $value
+     * @return void
+     */
     public function offsetSet($offset, $value)
     {
         if (is_null($offset)) {
@@ -108,24 +125,42 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
         }
     }
 
+    /**
+     * ArrayAccess相关处理方法, 删除某个值
+     *
+     * @param mixed $offset
+     * @return void
+     */
     public function offsetUnset($offset)
     {
         unset($this->data[$offset]);
     }
 
-    //Countable相关处理方法
+    /**
+     * Countable相关处理方法，获取计数长度
+     *
+     * @return integer
+     */
     public function count()
     {
         return count($this->data);
     }
 
-    //IteratorAggregate相关处理方法
+    /**
+     * IteratorAggregate相关处理方法, 迭代器
+     *
+     * @return ArrayIterator
+     */
     public function getIterator()
     {
         return new ArrayIterator($this->data);
     }
 
-    //JsonSerializable相关处理方法
+    /**
+     * JsonSerializable相关处理方法，转换json数据
+     *
+     * @return array
+     */
     public function jsonSerialize()
     {
         return $this->toArray();

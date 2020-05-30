@@ -29,7 +29,7 @@ class Query
     /**
      * SQL构造实例
      *
-     * @var null
+     * @var Builder
      */
     protected $builder = null;
 
@@ -1090,7 +1090,7 @@ class Query
      */
     public function getBind()
     {
-        $bind       = $this->bind;
+        $bind = $this->bind;
         $this->bind = [];
         return $bind;
     }
@@ -1098,12 +1098,12 @@ class Query
     /**
      * 分析查询表达式
      *
-     * @param string                $logic     查询逻辑 and or xor
-     * @param string|array|			$field     查询字段
-     * @param mixed                 $op        查询表达式
-     * @param mixed                 $condition 查询条件
-     * @param array                 $param     查询参数
-     * @param  bool                 $strict    严格模式
+     * @param string        $logic     查询逻辑 and or xor
+     * @param string|array  $field     查询字段
+     * @param mixed         $op        查询表达式
+     * @param mixed         $condition 查询条件
+     * @param array         $param     查询参数
+     * @param  bool         $strict    严格模式
      * @return void
      */
     protected function parseWhereExp($logic, $field, $op, $condition, $param = [], $strict = false)

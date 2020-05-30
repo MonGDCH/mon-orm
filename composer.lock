@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b2da17089a860f55baafd4ce381e8898",
+    "content-hash": "119fc7b69d5d8c92be395d1ea90d58d9",
     "packages": [
         {
             "name": "mongdch/mon-container",
