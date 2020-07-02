@@ -12,6 +12,15 @@ use mon\orm\exception\MondbException;
 /**
  * 链接DB
  *
+ * @method Query table(string $table) 设置表名(含表前缀)
+ * @method Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
+ * @method Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
+ * @method Query union(mixed $union, boolean $all = false) UNION查询
+ * @method Query limit(mixed $offset, mixed $length = null) 查询LIMIT
+ * @method Query page(integer $page, integer $length) 分页查询
+ * @method Query order(mixed $field, string $order = null) 查询ORDER
+ * @method Query field(mixed $field) 指定查询字段
  * @author Mon 985558837@qq.com
  * @version v1.0
  */

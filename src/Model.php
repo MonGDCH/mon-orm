@@ -4,28 +4,14 @@ namespace mon\orm;
 
 use Closure;
 use mon\orm\Db;
-use mon\orm\db\Query;
 use mon\orm\model\Data;
+use mon\orm\db\Connection;
 use mon\orm\model\DataCollection;
 use mon\orm\exception\MondbException;
 
 /**
  * 模型基类
  *
- * @mixin Query
- * @method Query startTrans() static 开启事务
- * @method Query commit() static 提交事务
- * @method Query rollback() static 回滚事务
- * @method Query table(string $table) static 设置表名(含表前缀)
- * @method Query where(mixed $field, string $op = null, mixed $condition = null) static 查询条件
- * @method Query whereOr(mixed $field, string $op = null, mixed $condition = null) static 查询条件(OR)
- * @method Query join(mixed $join, mixed $condition = null, string $type = 'INNER') static JOIN查询
- * @method Query union(mixed $union, boolean $all = false) static UNION查询
- * @method Query limit(mixed $offset, mixed $length = null) static 查询LIMIT
- * @method Query page(integer $page, integer $length) static 分页查询
- * @method Query order(mixed $field, string $order = null) static 查询ORDER
- * @method Query field(mixed $field) static 指定查询字段
- * @method Query getLastSql() static 获取最后执行的SQL
  * @author Mon 985558837@qq.com
  * @version v1.1
  */
@@ -89,7 +75,7 @@ abstract class Model
      * 获取DB实例
      *
      * @param boolean $newLink 是否重新创建链接
-     * @return Query
+     * @return Connection
      */
     public function db($newLink = false)
     {
@@ -110,7 +96,7 @@ abstract class Model
      *
      * @param  string|Closure $name 场景名称或者闭包函数
      * @param  mixed $args  可变传参
-     * @return Query    返回DB操作实例
+     * @return Connection    返回DB操作实例
      */
     public function scope($name, ...$args)
     {
