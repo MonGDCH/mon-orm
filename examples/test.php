@@ -25,6 +25,8 @@ class Test extends Model
 {
 	protected $table = 'mon_admin';
 
+	protected $readonly = ['username'];
+
 	/**
 	 * 查询场景传参
 	 *
@@ -44,12 +46,28 @@ $test = new Test();
 try {
 	// scope参数传递
 	// $data = $test->scope('args', 51)->select();
-	$data = $test->scope('args', 1, 1)->select();
+	// $data = $test->scope('args', 1, 1)->select();
 
 	// scope不存在，抛出异常
 	// $data = $test->scope('argss', 60, 1)->select();
 
-	var_dump($data, $test->getLastSql());
+	$info = [
+		'username'		=> 'bb',
+		'password'		=> md5(123456),
+		'salt'			=> 'aabb',
+		'create_time'	=> '123456789',
+		'update_time'	=> '123456789',
+		'asdf'			=> 1,
+		'sdfgg'			=> 2,
+	];
+	// 设置过滤字段
+	// $save = $test->allowField(['username', 'password', 'salt', 'create_time', 'update_time'])->save($info);
+
+	// 字段只读，无法更新
+	$save = $test->save(['username' => 'abc'], ['id' => 3]);
+
+	var_dump($save, $test->getLastSql());
+	// var_dump($data, $test->getLastSql());
 } catch (\mon\orm\exception\MondbException $e) {
 	var_dump($e->getMessage());
 	var_dump($e->getCode());

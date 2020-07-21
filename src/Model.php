@@ -11,7 +11,20 @@ use mon\orm\exception\MondbException;
 
 /**
  * 模型基类
- *
+ * 
+ * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
+ * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
+ * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
+ * @method \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
+ * @method \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
+ * @method \mon\orm\db\Query page(integer $page, integer $length) 分页查询
+ * @method \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
+ * @method \mon\orm\db\Query field(mixed $field) 指定查询字段
+ * @method \mon\orm\db\Query alias(string $alias) 指定表别名
+ * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
+ * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
+ * @method \mon\orm\db\Connection getLastSql() 获取最后执行的sql
  * @author Mon 985558837@qq.com
  * @version v1.1
  */
@@ -51,6 +64,20 @@ abstract class Model
      * @var array
      */
     protected $append = [];
+
+    /**
+     * 只读字段，不允许修改
+     *
+     * @var array
+     */
+    protected $readonly = [];
+
+    /**
+     * 只允许操作的字段
+     *
+     * @var array
+     */
+    protected $allow = [];
 
     /**
      * 错误信息
@@ -117,6 +144,18 @@ abstract class Model
     }
 
     /**
+     * 允许新增或修改的字段
+     *
+     * @param array $field  只允许操作的字段列表
+     * @return Model
+     */
+    public function allowField(array $field)
+    {
+        $this->allow = $field;
+        return $this;
+    }
+
+    /**
      * 保存数据
      *
      * @param  array $data     操作数据
@@ -125,10 +164,22 @@ abstract class Model
      * @param  mixed $query    查询对象实例
      * @return mixed
      */
-    public function save($data, $where = null, $sequence = null, $query = null)
+    public function save(array $data, $where = null, $sequence = null, $query = null)
     {
-        $result = !is_null($where) ?
-            $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
+        // 过滤允许操作的字段
+        if (!empty($this->allow)) {
+            $allowData = [];
+            foreach ($this->allow as $field) {
+                if (isset($data[$field])) {
+                    $allowData[$field] = $data[$field];
+                }
+            }
+            // 重置操作数据
+            $data = $allowData;
+            $this->allow = [];
+        }
+
+        $result = !is_null($where) ? $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
 
         return $result;
     }
@@ -189,6 +240,14 @@ abstract class Model
      */
     protected function updateData($data, $where, $db = null)
     {
+        // 过滤只读字段
+        if (!empty($this->readonly)) {
+            foreach ($this->readonly as $field) {
+                if (isset($data[$field])) {
+                    unset($data[$field]);
+                }
+            }
+        }
         // 自动完成
         $updateData = $this->autoCompleteData($this->update, $data);
         // 获取DB链接

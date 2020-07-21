@@ -198,6 +198,11 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.2.0
+
+* 增加模型类readonly属性及allowField方法，用于在调用save方法时定义只读字段及过滤无效的操作字段
+* 优化代码，增强注解
+
 ### 2.1.7
 
 * 优化代码，修正DB类实例返回Query实例导致Connect实例部分方法无法直接使用DB类实例调用

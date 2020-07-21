@@ -8,6 +8,19 @@ use mon\orm\db\Connection;
 /**
  * DB操作类
  *
+ * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
+ * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
+ * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
+ * @method \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
+ * @method \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
+ * @method \mon\orm\db\Query page(integer $page, integer $length) 分页查询
+ * @method \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
+ * @method \mon\orm\db\Query field(mixed $field) 指定查询字段
+ * @method \mon\orm\db\Query alias(string $alias) 指定表别名
+ * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
+ * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
+ * @method \mon\orm\db\Connection getLastSql() 获取最后执行的sql
  * @author Mon <985558837@qq.com>
  * @version v1.1
  */

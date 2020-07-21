@@ -21,6 +21,9 @@ use mon\orm\exception\MondbException;
  * @method Query page(integer $page, integer $length) 分页查询
  * @method Query order(mixed $field, string $order = null) 查询ORDER
  * @method Query field(mixed $field) 指定查询字段
+ * @method Query alias(string $alias) 指定表别名
+ * @method Query inc(string $field, integer $step = 1) 字段值增长
+ * @method Query dec(string $field, integer $step = 1) 字段值减少
  * @author Mon 985558837@qq.com
  * @version v1.0
  */
