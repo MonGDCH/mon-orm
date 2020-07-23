@@ -34,6 +34,13 @@ class Query
     protected $builder = null;
 
     /**
+     * 当前模型对象
+     *
+     * @var Model
+     */
+    protected $model;
+
+    /**
      * 查询表
      *
      * @var string
@@ -53,13 +60,6 @@ class Query
      * @var array
      */
     protected $bind = [];
-
-    /**
-     * 当前模型对象
-     *
-     * @var null
-     */
-    protected $model;
 
     /**
      * 构造方法
@@ -434,7 +434,7 @@ class Query
      * SUM查询
      * 
      * @param string $field 字段名
-     * @return float|int    结果集
+     * @return float|integer    结果集
      */
     public function sum($field)
     {
@@ -956,7 +956,7 @@ class Query
     /**
      * 查询lock
      *
-     * @param bool|string $lock 是否lock
+     * @param boolean|string $lock 是否lock
      * @return Query    当前实例自身
      */
     public function lock($lock = false)
@@ -968,10 +968,10 @@ class Query
     /**
      * distinct查询
      *
-     * @param string $distinct 是否唯一
+     * @param string|boolean $distinct 是否唯一
      * @return Query    当前实例自身
      */
-    public function distinct($distinct)
+    public function distinct($distinct = false)
     {
         $this->options['distinct'] = $distinct;
         return $this;
@@ -1076,7 +1076,7 @@ class Query
      * 检测参数是否已经绑定
      *
      * @param string $key 参数名
-     * @return bool
+     * @return boolean
      */
     public function isBind($key)
     {
@@ -1225,7 +1225,7 @@ class Query
      * 获取数据库的配置参数
      *
      * @param string $name 参数名称
-     * @return boolean
+     * @return mixed
      */
     public function getConfig($name = '')
     {
@@ -1306,7 +1306,7 @@ class Query
      * 模型类get方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
-     * @return mixed 结果集
+     * @return \mon\orm\model\Data 结果集
      */
     public function get($where = [])
     {
@@ -1330,7 +1330,7 @@ class Query
      * 模型类all方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
-     * @return mixed 结果集
+     * @return \mon\orm\model\DataCollection 结果集
      */
     public function all($where = [])
     {

@@ -20,7 +20,13 @@ use mon\orm\db\Connection;
  * @method \mon\orm\db\Query alias(string $alias) 指定表别名
  * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
  * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
- * @method \mon\orm\db\Connection getLastSql() 获取最后执行的sql
+ * @method \mon\orm\db\Query mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
+ * @method \mon\orm\db\Query mixed execute(string $sql, array $bind = []) 执行sql指令语句
+ * @method \mon\orm\db\Connection string getLastSql() 获取最后执行的sql
+ * @method \mon\orm\db\Connection integer getLastInsID(string $pk) 获取最后新增的ID
+ * @method \mon\orm\db\Connection void startTrans() 开启事务
+ * @method \mon\orm\db\Connection void commit() 提交事务
+ * @method \mon\orm\db\Connection void rollBack() 回滚事务
  * @author Mon <985558837@qq.com>
  * @version v1.1
  */
