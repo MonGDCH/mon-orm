@@ -391,7 +391,7 @@ class Connection
     /**
      * 回滚事务
      *
-     * @return [type] [description]
+     * @return void
      */
     public function rollBack()
     {

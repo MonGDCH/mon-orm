@@ -8,25 +8,25 @@ use mon\orm\db\Connection;
 /**
  * DB操作类
  *
- * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
- * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
- * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
- * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
- * @method \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
- * @method \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
- * @method \mon\orm\db\Query page(integer $page, integer $length) 分页查询
- * @method \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
- * @method \mon\orm\db\Query field(mixed $field) 指定查询字段
- * @method \mon\orm\db\Query alias(string $alias) 指定表别名
- * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
- * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
- * @method \mon\orm\db\Query mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
- * @method \mon\orm\db\Query mixed execute(string $sql, array $bind = []) 执行sql指令语句
- * @method \mon\orm\db\Connection string getLastSql() 获取最后执行的sql
- * @method \mon\orm\db\Connection integer getLastInsID(string $pk) 获取最后新增的ID
- * @method \mon\orm\db\Connection void startTrans() 开启事务
- * @method \mon\orm\db\Connection void commit() 提交事务
- * @method \mon\orm\db\Connection void rollBack() 回滚事务
+ * @method static \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
+ * @method static \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
+ * @method static \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method static \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
+ * @method static \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
+ * @method static \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
+ * @method static \mon\orm\db\Query page(integer $page, integer $length) 分页查询
+ * @method static \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
+ * @method static \mon\orm\db\Query field(mixed $field) 指定查询字段
+ * @method static \mon\orm\db\Query alias(string $alias) 指定表别名
+ * @method static \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
+ * @method static \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
+ * @method static \mon\orm\db\Query mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
+ * @method static \mon\orm\db\Query mixed execute(string $sql, array $bind = []) 执行sql指令语句
+ * @method static \mon\orm\db\Connection string getLastSql() 获取最后执行的sql
+ * @method static \mon\orm\db\Connection integer getLastInsID(string $pk) 获取最后新增的ID
+ * @method static \mon\orm\db\Connection void startTrans() 开启事务
+ * @method static \mon\orm\db\Connection void commit() 提交事务
+ * @method static \mon\orm\db\Connection void rollBack() 回滚事务
  * @author Mon <985558837@qq.com>
  * @version v1.1
  */
