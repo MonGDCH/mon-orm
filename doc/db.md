@@ -36,6 +36,8 @@ return [
     'charset'         => 'utf8',
     // 返回结果集类型
     'result_type'     => PDO::FETCH_ASSOC,
+    // 断线是否重连
+    'break_reconnect' => false,
 ];
 
 ```

@@ -25,7 +25,7 @@ use mon\orm\exception\MondbException;
  * @method Query inc(string $field, integer $step = 1) 字段值增长
  * @method Query dec(string $field, integer $step = 1) 字段值减少
  * @author Mon 985558837@qq.com
- * @version v1.0
+ * @version v2.3.0
  */
 class Connection
 {
@@ -110,6 +110,25 @@ class Connection
         'result_type'                   => PDO::FETCH_ASSOC,
         // 断线是否重连，注意：强制重连有可能导致数据库core掉
         'break_reconnect'               => false,
+    ];
+
+    /**
+     * 服务器断线标识字符
+     *
+     * @var array
+     */
+    protected $breakMatchStr = [
+        'server has gone away',
+        'no connection to the server',
+        'Lost connection',
+        'is dead or not enabled',
+        'Error while sending',
+        'decryption failed or bad record mac',
+        'server closed the connection unexpectedly',
+        'SSL connection has been closed unexpectedly',
+        'Error writing data to the connection',
+        'Resource deadlock avoided',
+        'failed with errno',
     ];
 
     /**
@@ -298,26 +317,47 @@ class Connection
             $this->free();
         }
 
-        // 预处理SQL
-        if (empty($this->PDOStatement)) {
-            $this->PDOStatement = $this->getLink()->prepare($sql);
-        }
-        // 是否为存储过程调用
-        $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
-        // 参数绑定
-        if ($procedure) {
-            $this->bindParam($bind);
-        } else {
-            $this->bindValue($bind);
-        }
-        // 执行查询
-        $this->PDOStatement->execute();
+        try {
+            // 预处理SQL
+            if (empty($this->PDOStatement)) {
+                $this->PDOStatement = $this->getLink()->prepare($sql);
+            }
+            // 是否为存储过程调用
+            $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+            // 参数绑定
+            if ($procedure) {
+                $this->bindParam($bind);
+            } else {
+                $this->bindValue($bind);
+            }
+            // 执行查询
+            $this->PDOStatement->execute();
 
-        // 触发全局查询事件
-        Db::trigger('query', $this, $bind);
+            // 触发全局查询事件
+            Db::trigger('query', $this, $bind);
 
-        // 返回结果集
-        return $this->getResult($pdo, $procedure);
+            // 返回结果集
+            return $this->getResult($pdo, $procedure);
+        } catch (PDOException $e) {
+            // 断线重连
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $pdo);
+            }
+
+            throw $e;
+        } catch (\Throwable $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $pdo);
+            }
+
+            throw $e;
+        } catch (Exception $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->query($sql, $bind, $pdo);
+            }
+
+            throw $e;
+        }
     }
 
     /**
@@ -338,25 +378,47 @@ class Connection
         if (!empty($this->PDOStatement) && $this->PDOStatement->queryString != $sql) {
             $this->free();
         }
-        // 预处理
-        if (empty($this->PDOStatement)) {
-            $this->PDOStatement = $this->getLink()->prepare($sql);
+
+        try {
+            // 预处理
+            if (empty($this->PDOStatement)) {
+                $this->PDOStatement = $this->getLink()->prepare($sql);
+            }
+            // 是否为存储过程调用
+            $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+            // 参数绑定
+            if ($procedure) {
+                $this->bindParam($bind);
+            } else {
+                $this->bindValue($bind);
+            }
+            // 执行语句
+            $this->PDOStatement->execute();
+            // 触发全局查询事件
+            Db::trigger('execute', $this, $bind);
+            // 返回影响行数
+            $this->numRows = $this->PDOStatement->rowCount();
+            return $this->numRows;
+        } catch (PDOException $e) {
+            // 断线重连
+            if ($this->isBreak($e)) {
+                return $this->close()->execute($sql, $bind);
+            }
+
+            throw $e;
+        } catch (\Throwable $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->execute($sql, $bind);
+            }
+
+            throw $e;
+        } catch (Exception $e) {
+            if ($this->isBreak($e)) {
+                return $this->close()->execute($sql, $bind);
+            }
+
+            throw $e;
         }
-        // 是否为存储过程调用
-        $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
-        // 参数绑定
-        if ($procedure) {
-            $this->bindParam($bind);
-        } else {
-            $this->bindValue($bind);
-        }
-        // 执行语句
-        $this->PDOStatement->execute();
-        // 触发全局查询事件
-        Db::trigger('execute', $this, $bind);
-        // 返回影响行数
-        $this->numRows = $this->PDOStatement->rowCount();
-        return $this->numRows;
     }
 
     /**
@@ -367,11 +429,20 @@ class Connection
     public function startTrans()
     {
         ++$this->transLevel;
-        // 只有当事务无嵌套才开启事务
-        if ($this->transLevel == 1) {
-            $this->getLink()->beginTransaction();
-        } elseif ($this->transLevel > 1) {
-            $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
+        try {
+            // 只有当事务无嵌套才开启事务
+            if ($this->transLevel == 1) {
+                $this->getLink()->beginTransaction();
+            } elseif ($this->transLevel > 1) {
+                $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
+            }
+        } catch (Exception $e) {
+            if ($this->isBreak($e)) {
+                --$this->transLevel;
+                return $this->close()->startTrans();
+            }
+
+            throw $e;
         }
     }
 
@@ -492,11 +563,13 @@ class Connection
     /**
      * 释放查询结果集
      * 
-     * @return void
+     * @return Connection   自身实例
      */
     public function free()
     {
         $this->PDOStatement = null;
+
+        return $this;
     }
 
     /**
@@ -647,5 +720,27 @@ class Connection
     protected function parseSavepointRollBack($name)
     {
         return 'ROLLBACK TO SAVEPOINT ' . $name;
+    }
+
+    /**
+     * 是否断线
+     *
+     * @param  PDOException|Exception  $e 异常对象
+     * @return boolean
+     */
+    protected function isBreak($e)
+    {
+        if (!$this->config['break_reconnect']) {
+            return false;
+        }
+
+        $error = $e->getMessage();
+
+        foreach ($this->breakMatchStr as $msg) {
+            if (false !== stripos($error, $msg)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

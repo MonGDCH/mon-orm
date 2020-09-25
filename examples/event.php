@@ -13,7 +13,7 @@ $config = [
 	// 用户名
 	'username'        => 'root',
 	// 密码
-	'password'        => '19930603',
+	'password'        => 'root',
 	// 端口
 	'port'        	  => '3306',
 ];

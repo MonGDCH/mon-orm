@@ -17,7 +17,7 @@ class Test extends Model
         // 用户名
         'username'        => 'root',
         // 密码
-        'password'        => '19930603',
+        'password'        => 'root',
         // 端口
         'port'            => '3306',
     ];
@@ -40,7 +40,7 @@ class Test extends Model
         return $save;
     }
 
-    public function as()
+    public function asb()
     {
         $data = $this->alias(['mon_notice' => 'c', 'mon_admin' => 'a', 'mon_auth_rule' => 'b'])
             ->field('c.name, c.author, a.username')
@@ -61,7 +61,7 @@ $t = new Test;
 // var_dump($t->addAll(), $t->getLastSql());
 
 
-// var_dump($t->as(), $t->getLastSql());
+// var_dump($t->asb(), $t->getLastSql());
 
 
 // var_dump($t->un(), $t->getLastSql());
