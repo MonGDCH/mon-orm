@@ -340,6 +340,9 @@ abstract class Model
                 $value = null;
             }
             // 处理数据字段
+            if (isset($data[$field])) {
+                $value = $data[$field];
+            }
             $result[$field] = $this->setAttr($field, $value, $data);
         }
 

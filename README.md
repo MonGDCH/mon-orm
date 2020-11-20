@@ -198,6 +198,10 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.3.1
+
+* 修复模型数据自动完成时，参数值缺失的问题
+
 ### 2.3.0
 
 * 优化代码，增强注解
@@ -298,4 +302,4 @@ $data = $test->scope('test')->where('id', 20)->all();
 # 关于
 
 作者邮箱： 985558837@qq.com
-作者博客： [http://blog.gdmon.com](http://blog.gdmon.com)
+作者博客： [http://gdmon.com](http://gdmon.com)
