@@ -3,6 +3,7 @@
 namespace mon\orm\db;
 
 use PDO;
+use Throwable;
 use Exception;
 use PDOException;
 use mon\orm\Db;
@@ -25,7 +26,7 @@ use mon\orm\exception\MondbException;
  * @method Query inc(string $field, integer $step = 1) 字段值增长
  * @method Query dec(string $field, integer $step = 1) 字段值减少
  * @author Mon 985558837@qq.com
- * @version v2.3.0
+ * @version v2.3.1
  */
 class Connection
 {
@@ -187,7 +188,7 @@ class Connection
      */
     public function getConfig($name = '')
     {
-        return $name ? $this->config[$name] : $this->name;
+        return $name ? $this->config[$name] : $this->config;
     }
 
     /**
@@ -214,7 +215,7 @@ class Connection
     /**
      * 获取最近一次查询的sql语句
      *
-     * @return  string 最后执行的sql语句
+     * @return string 最后执行的sql语句
      */
     public function getLastSql()
     {
@@ -244,6 +245,7 @@ class Connection
      * 链接DB
      *
      * @param  array  $config 配置信息
+     * @throws MondbException
      * @return Connection 实例自身
      */
     public function connect(array $config = [])
@@ -286,7 +288,7 @@ class Connection
     /**
      * 获取DB链接
      *
-     * @return mixed    数据库链接
+     * @return mixed 数据库链接
      */
     public function getLink()
     {
@@ -303,6 +305,9 @@ class Connection
      * @param  string  $sql  SQL语句
      * @param  array   $bind 绑定的值
      * @param  boolean $pdo  是否返回PDO对象
+     * @throws PDOException
+     * @throws Throwable
+     * @throws Exception
      * @return mixed   查询结果集
      */
     public function query($sql, array $bind = [], $pdo = false)
@@ -345,7 +350,7 @@ class Connection
             }
 
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $pdo);
             }
@@ -365,6 +370,9 @@ class Connection
      *
      * @param  string $sql  SQL语句
      * @param  array  $bind 绑定的值
+     * @throws PDOException
+     * @throws Throwable
+     * @throws Exception
      * @return integer 影响行数
      */
     public function execute($sql, array $bind = [])
@@ -406,7 +414,7 @@ class Connection
             }
 
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind);
             }
@@ -424,6 +432,7 @@ class Connection
     /**
      * 开启事务
      *
+     * @throws Exception
      * @return void
      */
     public function startTrans()
@@ -464,7 +473,7 @@ class Connection
      *
      * @return void
      */
-    public function rollBack()
+    public function rollback()
     {
         if ($this->transLevel == 1) {
             $this->transLevel = 0;
@@ -473,6 +482,51 @@ class Connection
             $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
         }
         $this->transLevel = max(0, $this->transLevel - 1);
+    }
+
+    /**
+     * 开启XA分布式事务
+     *
+     * @param string $xid XA事务id，注意唯一性
+     * @return void
+     */
+    public function startTransXA($xid)
+    {
+        $this->getLink()->exec("XA START '$xid'");
+    }
+
+    /**
+     * 预编译XA事务
+     *
+     * @param  string $xid XA事务id
+     * @return void
+     */
+    public function prepareXA($xid)
+    {
+        $this->getLink()->exec("XA END '$xid'");
+        $this->getLink()->exec("XA PREPARE '$xid'");
+    }
+
+    /**
+     * 提交XA事务
+     *
+     * @param  string $xid XA事务id
+     * @return void
+     */
+    public function commitXA($xid)
+    {
+        $this->getLink()->exec("XA COMMIT '$xid'");
+    }
+
+    /**
+     * 回滚XA事务
+     *
+     * @param  string $xid XA事务id
+     * @return void
+     */
+    public function rollbackXA($xid)
+    {
+        $this->getLink()->exec("XA ROLLBACK '$xid'");
     }
 
     /**
@@ -551,7 +605,7 @@ class Connection
     /**
      * 断开链接
      *
-     * @return Connection   自身实例
+     * @return Connection 自身实例
      */
     public function close()
     {
@@ -563,7 +617,7 @@ class Connection
     /**
      * 释放查询结果集
      * 
-     * @return Connection   自身实例
+     * @return Connection 自身实例
      */
     public function free()
     {
@@ -610,6 +664,7 @@ class Connection
      * 或者 ['value',123] 对应问号占位符
      *
      * @param array $bind 要绑定的参数列表
+     * @throws MondbException
      * @return void
      */
     protected function bindValue(array $bind = [])
@@ -638,6 +693,7 @@ class Connection
      * 存储过程的输入输出参数绑定
      *
      * @param array $bind 要绑定的参数列表
+     * @throws MondbException
      * @return void
      */
     protected function bindParam($bind)
@@ -652,7 +708,7 @@ class Connection
             }
             if (!$result) {
                 $param = array_shift($val);
-                throw new Exception(
+                throw new MondbException(
                     "Bind param error: {$param}",
                     MondbException::BIND_VALUE_ERROR
                 );
@@ -663,8 +719,8 @@ class Connection
     /**
      * 获得数据集数组
      *
-     * @param bool   $pdo 是否返回PDOStatement
-     * @param bool   $procedure 是否存储过程
+     * @param boolean $pdo 是否返回PDOStatement
+     * @param boolean $procedure 是否存储过程
      * @return PDOStatement|array 数据集
      */
     protected function getResult($pdo = false, $procedure = false)
@@ -677,7 +733,7 @@ class Connection
             // 存储过程返回结果
             return $this->procedure();
         }
-        $result        = $this->PDOStatement->fetchAll($this->getConfig('result_type'));
+        $result = $this->PDOStatement->fetchAll($this->getConfig('result_type'));
         $this->numRows = count($result);
         return $result;
     }

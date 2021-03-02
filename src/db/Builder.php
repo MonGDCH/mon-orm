@@ -6,6 +6,9 @@ use mon\orm\exception\MondbException;
 
 /**
  * 查询语句构造对象
+ * 
+ * @author Mon <985558837@qq.com>
+ * @version 2.0.0
  */
 class Builder
 {
@@ -136,7 +139,7 @@ class Builder
      *
      * @param array     $data 数据
      * @param array     $options 表达式
-     * @param bool      $replace 是否replace
+     * @param boolean   $replace 是否replace
      * @return string
      */
     public function insert(array $data, array $options = [], $replace = false)
@@ -171,7 +174,7 @@ class Builder
      *
      * @param array     $dataSet 数据集
      * @param array     $options 表达式
-     * @param bool      $replace 是否replace
+     * @param boolean   $replace 是否replace
      * @return string
      */
     public function insertAll($dataSet, $options = [], $replace = false)
@@ -476,6 +479,7 @@ class Builder
      * @param  string $rule     规则
      * @param  mixed  $options  查询参数
      * @param  mixed  $bindName 绑定值
+     * @throws MondbException
      * @return string
      */
     protected function parseWhereItem($field, $val, $rule = '', $options = [], $bindName = null)
@@ -731,10 +735,9 @@ class Builder
     /**
      * 数据分析
      *
-     * @param array     $data 数据
-     * @param array     $options 查询参数
+     * @param array $data 数据
+     * @param array $options 查询参数
      * @return array
-     * @throws Exception
      */
     protected function parseData($data, $options)
     {

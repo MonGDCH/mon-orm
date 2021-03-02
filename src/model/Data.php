@@ -244,7 +244,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
     /**
      * JsonSerializable相关处理方法，转换json数据
      *
-     * @return arrah
+     * @return array
      */
     public function jsonSerialize()
     {

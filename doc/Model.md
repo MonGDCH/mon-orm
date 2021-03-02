@@ -16,13 +16,13 @@ class Test extends \mon\orm\Model
 
 	/**
 	 * 模型独立使用的配置信息
-	 * @var string
+	 * @var array
 	 */
 	public $config = [模型独立使用的配置信息];
 
 	/**
 	 * 新增自动写入字段
-	 * @var [type]
+	 * @var array
 	 */
 	protected $insert = [
 		'create_time'	=> '',
@@ -32,7 +32,7 @@ class Test extends \mon\orm\Model
 
 	/**
 	 * 更新自动写入字段
-	 * @var [type]
+	 * @var array
 	 */
 	protected $update = [
 		'update_time'
@@ -50,7 +50,7 @@ class Test extends \mon\orm\Model
 	/**
 	 * 自动完成create_time字段
 	 * 
-	 * @param [type] $val 默认值
+	 * @param mixed $val 默认值
 	 * @param array  $row 行值
 	 */
 	protected function setCreateTimeAttr($val, $row = []){
@@ -60,7 +60,7 @@ class Test extends \mon\orm\Model
 	/**
 	 * 自动完成update_time字段
 	 * 
-	 * @param [type] $val 默认值
+	 * @param mixed $val 默认值
 	 * @param array  $row 行值
 	 */
 	protected function setUpdateTimeAttr($val, $row = []){
@@ -70,9 +70,9 @@ class Test extends \mon\orm\Model
 	/**
 	 * 自动完成格式化获取create_time结果
 	 *
-	 * @param  [type] $val [description]
+	 * @param  mixed $val [description]
 	 * @param  array  $row [description]
-	 * @return [type]      [description]
+	 * @return string
 	 */
 	protected function getCreateTimeAttr($val, $row){
 		return date('Y-m-d H:i:s', $val);
@@ -80,9 +80,9 @@ class Test extends \mon\orm\Model
 
 	/**
 	 * 自动完成格式化append中count字段的数据
-	 * @param  [type] $val [description]
-	 * @param  [type] $row [description]
-	 * @return [type]      [description]
+	 * @param  mixed $val [description]
+	 * @param  array $row [description]
+	 * @return integer
 	 */
 	protected function getcountAttr($val, $row)
 	{
@@ -92,7 +92,7 @@ class Test extends \mon\orm\Model
 	/**
 	 * 测试查询场景
 	 *
-	 * @return [type] [description]
+	 * @return \mon\orm\db\Query
 	 */
 	protected function scopeTest($query)
 	{
@@ -102,7 +102,7 @@ class Test extends \mon\orm\Model
 	/**
 	 * 测试sava方法
 	 *
-	 * @return [type] [description]
+	 * @return array
 	 */
 	public function testScopee()
 	{

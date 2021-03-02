@@ -26,13 +26,19 @@ use mon\orm\exception\MondbException;
  * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
  * @method \mon\orm\db\Query query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
  * @method \mon\orm\db\Query execute(string $sql, array $bind = []) 执行sql指令语句
+ * @method \mon\orm\db\Query action(Closure $callback) 回调方法封装执行事务
+ * @method \mon\orm\db\Query actionXA(Closure $callback) 回调方法封装执行XA事务
  * @method \mon\orm\db\Connection getLastSql() 获取最后执行的sql
  * @method \mon\orm\db\Connection getLastInsID(string $pk) 获取最后新增的ID
  * @method \mon\orm\db\Connection startTrans() 开启事务
  * @method \mon\orm\db\Connection commit() 提交事务
- * @method \mon\orm\db\Connection rollBack() 回滚事务
+ * @method \mon\orm\db\Connection rollback() 回滚事务
+ * @method \mon\orm\db\Connection startTransXA(string $xid) 开启XA分布式事务
+ * @method \mon\orm\db\Connection commitXA(string $xid) 提交XA事务
+ * @method \mon\orm\db\Connection rollbackXA(string $xid) 回滚XA事务
+ * @method \mon\orm\db\Connection prepareXA(string $xid) 预编译XA事务
  * @author Mon 985558837@qq.com
- * @version v2.3.0
+ * @version v2.3.1
  */
 abstract class Model
 {
@@ -91,6 +97,56 @@ abstract class Model
      * @var string
      */
     protected $error = '';
+
+    /**
+     * 获取模型操作表名
+     *
+     * @return string
+     */
+    public function getTable()
+    {
+        return $this->table;
+    }
+
+    /**
+     * 获取更新操作自动完成字段
+     *
+     * @return array
+     */
+    public function getUpdate()
+    {
+        return $this->update;
+    }
+
+    /**
+     * 获取新增操作自动完成字段
+     * 
+     * @return array
+     */
+    public function getInsert()
+    {
+        return $this->insert;
+    }
+
+    /**
+     * 获取查询后自动完成字段
+     *
+     * @return array
+     */
+    public function getAppend()
+    {
+        return $this->append;
+    }
+
+    /**
+     * 获取只读字段
+     *
+     * @return array
+     */
+    public function getReadonly()
+    {
+        return $this->readonly;
+    }
 
     /**
      * 获取错误信息

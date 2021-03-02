@@ -29,6 +29,7 @@ $config = [
 	'username' => 'root',
 	'password' => 'root',
 	'port'     => '3306',
+	'break_reconnect' => false
 ];
 
 // 通过connect方法连接DB操作DB
@@ -65,13 +66,13 @@ class Test extends Model
 
 	/**
 	 * 模型独立使用的配置信息
-	 * @var string
+	 * @var array
 	 */
 	public $config = [模型独立使用的配置信息];
 
 	/**
 	 * 新增自动写入字段
-	 * @var [type]
+	 * @var array
 	 */
 	protected $insert = [
 		'create_time'	=> '',
@@ -81,7 +82,7 @@ class Test extends Model
 
 	/**
 	 * 更新自动写入字段
-	 * @var [type]
+	 * @var array
 	 */
 	protected $update = [
 		'update_time'
@@ -99,7 +100,7 @@ class Test extends Model
 	/**
 	 * 自动完成create_time字段
 	 * 
-	 * @param [type] $val 默认值
+	 * @param mixed $val 默认值
 	 * @param array  $row 列值
 	 */
 	protected function setCreateTimeAttr($val, $row = []){
@@ -109,7 +110,7 @@ class Test extends Model
 	/**
 	 * 自动完成update_time字段
 	 * 
-	 * @param [type] $val 默认值
+	 * @param mixed $val 默认值
 	 * @param array  $row 列值
 	 */
 	protected function setUpdateTimeAttr($val, $row = []){
@@ -119,9 +120,9 @@ class Test extends Model
 	/**
 	 * 自动完成格式化获取create_time结果
 	 *
-	 * @param  [type] $val [description]
+	 * @param  mixed $val [description]
 	 * @param  array  $row [description]
-	 * @return [type]      [description]
+	 * @return string
 	 */
 	protected function getCreateTimeAttr($val, $row){
 		return date('Y-m-d H:i:s', $val);
@@ -129,9 +130,9 @@ class Test extends Model
 
 	/**
 	 * 自动完成格式化append中count字段的数据
-	 * @param  [type] $val [description]
-	 * @param  [type] $row [description]
-	 * @return [type]      [description]
+	 * @param  mixed $val [description]
+	 * @param  array $row [description]
+	 * @return integer
 	 */
 	protected function getcountAttr($val, $row)
 	{
@@ -141,7 +142,7 @@ class Test extends Model
 	/**
 	 * 测试查询场景
 	 *
-	 * @return [type] [description]
+	 * @return \mon\orm\db\Query
 	 */
 	protected function scopeTest($query)
 	{
@@ -151,7 +152,7 @@ class Test extends Model
 	/**
 	 * 测试sava方法
 	 *
-	 * @return [type] [description]
+	 * @return array
 	 */
 	public function testScopee()
 	{
@@ -197,6 +198,11 @@ $data = $test->scope('test')->where('id', 20)->all();
 ---
 
 # 版本
+
+### 2.3.2
+
+* 优化代码，增强注解
+* 增加对分布式事务XA支持（注意：使用XA事务无法使用本地事务及锁表操作，更无法支持事务嵌套）
 
 ### 2.3.1
 

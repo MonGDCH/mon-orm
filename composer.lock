@@ -4,27 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d209b4b85281ba593b6b5a75b59b4ce9",
+    "content-hash": "7eec3bfe879143205448555a0e103c01",
     "packages": [
         {
-            "name": "mongdch/mon-container",
-            "version": "1.0.1",
+            "name": "mongdch/mon-util",
+            "version": "1.2.8",
             "source": {
                 "type": "git",
-                "url": "https://github.com/MonGDCH/mon-container.git",
-                "reference": "cae30a0fce957ef1c9df5a4dbe8f2fd46bfee374"
+                "url": "https://github.com/MonGDCH/mon-util.git",
+                "reference": "b0024ac96d4311554a767bd9cad0e93c893d9058"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MonGDCH/mon-container/zipball/cae30a0fce957ef1c9df5a4dbe8f2fd46bfee374",
-                "reference": "cae30a0fce957ef1c9df5a4dbe8f2fd46bfee374",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/b0024ac96d4311554a767bd9cad0e93c893d9058",
+                "reference": "b0024ac96d4311554a767bd9cad0e93c893d9058",
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.6.0"
@@ -32,12 +26,15 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "mon\\factory\\": "src/"
-                }
+                    "mon\\util\\": "src/"
+                },
+                "files": [
+                    "src/function.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT"
+                "Apache-2.0"
             ],
             "authors": [
                 {
@@ -45,13 +42,27 @@
                     "email": "985558837@qq.com"
                 }
             ],
-            "description": "the php factory container utils.",
+            "description": "常用的PHP工具类、方法包，包含了各种各式各样的工具，如：容器、时间、验证器、多语言、图片、二维码、IP地址、文件上传、文件操作、加解密、数据字典、各种算法等等等等。。。",
+            "homepage": "http://www.gdmon.com",
             "keywords": [
                 "container",
-                "factory",
-                "php"
+                "date",
+                "file",
+                "iplocation",
+                "lang",
+                "php",
+                "qrcode",
+                "tree",
+                "upload",
+                "util",
+                "validate",
+                "工具"
             ],
-            "time": "2019-06-24T06:02:58+00:00"
+            "support": {
+                "issues": "https://github.com/MonGDCH/mon-util/issues",
+                "source": "https://github.com/MonGDCH/mon-util/tree/1.2.8"
+            },
+            "time": "2021-03-01T06:43:17+00:00"
         }
     ],
     "packages-dev": [],
@@ -64,5 +75,6 @@
         "php": ">=5.6.0",
         "ext-pdo": ">=1.0.0"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.0.0"
 }

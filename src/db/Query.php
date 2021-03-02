@@ -4,18 +4,20 @@ namespace mon\orm\db;
 
 use PDO;
 use Closure;
+use Exception;
 use mon\orm\Db;
 use PDOStatement;
 use mon\orm\Model;
 use mon\orm\db\Builder;
 use mon\orm\db\Connection;
 use mon\orm\exception\MondbException;
+use Throwable;
 
 /**
  * 查询构造器
  *
  * @author Mon 985558837@qq.com
- * @version v1.0
+ * @version 2.0.0
  */
 class Query
 {
@@ -193,20 +195,139 @@ class Query
      */
     public function action($callback)
     {
-        if ($callback instanceof Closure) {
-            // 开启事务
-            $this->startTrans();
+        // 开启事务
+        $this->startTrans();
+        try {
+            $result = null;
+            if (is_callable($callback)) {
+                // 执行匿名回调
+                $result = call_user_func($callback, $this);
+            }
 
-            // 执行匿名回调
-            $result = call_user_func($callback, $this);
-            if ($result === false) {
-                $this->rollback();
-            } else {
-                $this->commit();
+            $this->commit();
+            return $result;
+        } catch (Exception $e) {
+            $this->rollback();
+            throw $e;
+        } catch (Throwable $e) {
+            $this->rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * 启动XA事务
+     *
+     * @param string $xid XA事务id
+     * @return void
+     */
+    public function startTransXA($xid)
+    {
+        $this->connection->startTransXA($xid);
+    }
+
+    /**
+     * 提交XA事务
+     *
+     * @param string $xid XA事务id
+     * @return void
+     */
+    public function commitXA($xid)
+    {
+        $this->connection->commitXA($xid);
+    }
+
+    /**
+     * XA事务回滚
+     *
+     * @param string $xid XA事务id
+     * @return void
+     */
+    public function rollbackXA($xid)
+    {
+        $this->connection->rollbackXA($xid);
+    }
+
+    /**
+     * 预编译XA事务
+     *
+     * @param string $xid XA事务id
+     * @return void
+     */
+    public function prepareXA($xid)
+    {
+        $this->connection->prepareXA($xid);
+    }
+
+    /**
+     * XA事务处理
+     *
+     * @see 注意：使用XA事务无法使用本地事务及锁表操作，更无法支持事务嵌套
+     * @param Closure $callback 回调函数
+     * @param array   $dbs 回调函数中涉及使用的数据库连接实例列表
+     * @return mixed 结果期
+     */
+    public function actionXA($callback, $dbs = [])
+    {
+        $xids = [];
+        $prepareXA = [];
+        if (empty($dbs)) {
+            $dbs[] = $this->connection;
+        }
+
+        // 所有链接实例都需要开启XA事务
+        foreach ($dbs as $k => $db) {
+            $prepareXA[$k] = false;
+            $xids[$k] = uniqid('mon_xa');
+            $db->startTransXA($xids[$k]);
+        }
+
+        try {
+            $result = null;
+            if (is_callable($callback)) {
+                // 执行匿名回调
+                $result = call_user_func($callback, $this);
+            }
+
+            // 所有链接实例都需要预编译XA事务
+            foreach ($dbs as $k => $db) {
+                if (!$prepareXA[$k]) {
+                    $db->prepareXA($xids[$k]);
+                    $prepareXA[$k] = true;
+                }
+            }
+
+            // 所有链接实例都需要提交XA事务
+            foreach ($dbs as $k => $db) {
+                $db->commitXA($xids[$k]);
             }
             return $result;
-        } else {
-            return false;
+        } catch (Exception $e) {
+            // 所有链接实例都需要预编译XA事务
+            foreach ($dbs as $k => $db) {
+                if (!$prepareXA[$k]) {
+                    $db->prepareXA($xids[$k]);
+                    $prepareXA[$k] = true;
+                }
+            }
+            // 所有链接实例都需要回滚XA事务
+            foreach ($dbs as $k => $db) {
+                $db->rollbackXA($xids[$k]);
+            }
+            throw $e;
+        } catch (Throwable $e) {
+            // 所有链接实例都需要预编译XA事务
+            foreach ($dbs as $k => $db) {
+                if (!$prepareXA[$k]) {
+                    $db->prepareXA($xids[$k]);
+                    $prepareXA[$k] = true;
+                }
+            }
+            // 所有链接实例都需要回滚XA事务
+            foreach ($dbs as $k => $db) {
+                $db->rollbackXA($xids[$k]);
+            }
+            throw $e;
         }
     }
 
@@ -257,6 +378,7 @@ class Query
      * 更新查询
      *
      * @param  array  $data 更新的数据
+     * @throws MondbException
      * @return integer  影响行数
      */
     public function update(array $data = [])
@@ -385,6 +507,7 @@ class Query
     /**
      * 操作操作
      *
+     * @throws MondbException
      * @return integer  影响行数
      */
     public function delete()
@@ -421,13 +544,13 @@ class Query
      */
     public function count($field = '*')
     {
-        $res = $this->field('COUNT(' . $field . ') AS mondb_count')->find();
-        if ($res instanceof PDOStatement || is_string($res)) {
+        $result = $this->field('COUNT(' . $field . ') AS mondb_count')->find();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
-            return $res;
+            return $result;
         }
 
-        return isset($res['mondb_count']) ? $res['mondb_count'] : false;
+        return isset($result['mondb_count']) ? $result['mondb_count'] : false;
     }
 
     /**
@@ -438,13 +561,13 @@ class Query
      */
     public function sum($field)
     {
-        $res = $this->field('SUM(' . $field . ') AS mondb_sum')->find();
-        if ($res instanceof PDOStatement || is_string($res)) {
+        $result = $this->field('SUM(' . $field . ') AS mondb_sum')->find();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
-            return $res;
+            return $result;
         }
 
-        return isset($res['mondb_sum']) ? $res['mondb_sum'] : false;
+        return isset($result['mondb_sum']) ? $result['mondb_sum'] : false;
     }
 
     /**
@@ -455,13 +578,13 @@ class Query
      */
     public function min($field)
     {
-        $res = $this->field('MIN(' . $field . ') AS mondb_min')->find();
-        if ($res instanceof PDOStatement || is_string($res)) {
+        $result = $this->field('MIN(' . $field . ') AS mondb_min')->find();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
-            return $res;
+            return $result;
         }
 
-        return isset($res['mondb_min']) ? $res['mondb_min'] : false;
+        return isset($result['mondb_min']) ? $result['mondb_min'] : false;
     }
 
     /**
@@ -472,13 +595,13 @@ class Query
      */
     public function max($field)
     {
-        $res = $this->field('MAX(' . $field . ') AS mondb_max')->find();
-        if ($res instanceof PDOStatement || is_string($res)) {
+        $result = $this->field('MAX(' . $field . ') AS mondb_max')->find();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
-            return $res;
+            return $result;
         }
 
-        return isset($res['mondb_max']) ? $res['mondb_max'] : false;
+        return isset($result['mondb_max']) ? $result['mondb_max'] : false;
     }
 
     /**
@@ -489,19 +612,19 @@ class Query
      */
     public function avg($field)
     {
-        $res = $this->field('AVG(' . $field . ') AS mondb_avg')->find();
-        if ($res instanceof PDOStatement || is_string($res)) {
+        $result = $this->field('AVG(' . $field . ') AS mondb_avg')->find();
+        if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
-            return $res;
+            return $result;
         }
 
-        return isset($res['mondb_avg']) ? $res['mondb_avg'] : false;
+        return isset($result['mondb_avg']) ? $result['mondb_avg'] : false;
     }
 
     /**
      * 调试模式,只返回SQL
      *
-     * @return Query    当前实例自身
+     * @return Query 当前实例自身
      */
     public function debug()
     {
@@ -512,7 +635,7 @@ class Query
     /**
      * 获取PDO结果集,不解析
      *
-     * @return Query    当前实例自身
+     * @return Query 当前实例自身
      */
     public function getObj()
     {
@@ -1103,7 +1226,7 @@ class Query
      * @param mixed         $op        查询表达式
      * @param mixed         $condition 查询条件
      * @param array         $param     查询参数
-     * @param  bool         $strict    严格模式
+     * @param boolean       $strict    严格模式
      * @return void
      */
     protected function parseWhereExp($logic, $field, $op, $condition, $param = [], $strict = false)
@@ -1214,7 +1337,7 @@ class Query
      *
      * @param string $field 查询字段
      * @param string $logic 查询逻辑 and or xor
-     * @return bool
+     * @return boolean
      */
     protected function checkMultiField($field, $logic)
     {
@@ -1235,6 +1358,7 @@ class Query
     /**
      * 分析表达式（可用于查询或者写入操作）
      *
+     * @throws MondbException
      * @return array
      */
     public function parseExpress()
@@ -1282,6 +1406,7 @@ class Query
      * @param  array $data     操作数据
      * @param  array $where    where条件，存在则为更新，反之新增
      * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @throws MondbException
      * @return mixed 结果集
      */
     public function save($data, $where = null, $sequence = null)
@@ -1306,6 +1431,7 @@ class Query
      * 模型类get方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
+     * @throws MondbException
      * @return \mon\orm\model\Data 结果集
      */
     public function get($where = [])
@@ -1330,6 +1456,7 @@ class Query
      * 模型类all方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
+     * @throws MondbException
      * @return \mon\orm\model\DataCollection 结果集
      */
     public function all($where = [])
