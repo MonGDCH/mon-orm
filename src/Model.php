@@ -4,6 +4,8 @@ namespace mon\orm;
 
 use Closure;
 use mon\orm\Db;
+use mon\util\Validate;
+use mon\util\Container;
 use mon\orm\model\Data;
 use mon\orm\db\Connection;
 use mon\orm\model\DataCollection;
@@ -13,6 +15,9 @@ use mon\orm\exception\MondbException;
  * 模型基类
  * 
  * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
+ * @method \mon\orm\db\Query update(array $data = []) 更新数据
+ * @method \mon\orm\db\Query insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
+ * @method \mon\orm\db\Query insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
  * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
  * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
  * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
@@ -83,6 +88,13 @@ abstract class Model
      * @var array
      */
     protected $readonly = [];
+
+    /**
+     * 验证器驱动，默认为内置的Validate验证器
+     *
+     * @var string
+     */
+    protected $validate = Validate::class;
 
     /**
      * 只允许操作的字段
@@ -161,6 +173,16 @@ abstract class Model
     }
 
     /**
+     * 获取实例化验证器
+     *
+     * @return Validate
+     */
+    public function validate()
+    {
+        return Container::instance()->make($this->validate);
+    }
+
+    /**
      * 获取DB实例
      *
      * @param boolean $newLink 是否重新创建链接
@@ -172,7 +194,7 @@ abstract class Model
             $this->config = Db::getConfig();
         }
         // 获取DB实例
-        $connect =  Db::connect((array) $this->config, $newLink)->model($this);
+        $connect =  Db::connect($this->config, $newLink)->model($this);
         if (!empty($this->table)) {
             $connect = $connect->table($this->table);
         }
@@ -241,9 +263,7 @@ abstract class Model
             $this->allow = [];
         }
 
-        $result = !is_null($where) ? $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
-
-        return $result;
+        return !is_null($where) ? $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
     }
 
     /**
@@ -251,7 +271,7 @@ abstract class Model
      *
      * @param  array $where    where条件
      * @param  mixed $db       查询对象实例
-     * @return \mon\orm\model\Data  数据集对象
+     * @return Data|null  数据集对象
      */
     public function get($where = [], $db = null)
     {
@@ -260,6 +280,9 @@ abstract class Model
             $db = $this->db();
         }
         $data = $db->where($where)->find();
+        if (!$data) {
+            return null;
+        }
 
         return new Data($data, $this, $this->append);
     }
@@ -269,7 +292,7 @@ abstract class Model
      *
      * @param  array  $where    where条件
      * @param  mixed  $db 查询对象实例
-     * @return \mon\orm\model\DataCollection  数据集对象
+     * @return DataCollection|null  数据集对象
      */
     public function all($where = [], $db = null)
     {
@@ -278,18 +301,15 @@ abstract class Model
             $db = $this->db();
         }
         $data = $db->where($where)->select();
-        // 有数据，生成数据集合
-        if (count($data) > 0) {
-            // 遍历转换生成对象集合
-            foreach ($data as $k => &$v) {
-                $v = new Data($v, $this, $this->append);
-            }
-            $data = new DataCollection($data);
-        } else {
-            $data = new DataCollection($data);
+        if (!$data) {
+            return null;
         }
-
-        return $data;
+        // 有数据，生成数据集合
+        foreach ($data as &$item) {
+            // 遍历转换生成对象集合
+            $item = new Data($item, $this, $this->append);
+        }
+        return new DataCollection($data);
     }
 
     /**

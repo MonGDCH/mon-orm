@@ -2,7 +2,9 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Db;
+use mon\orm\db\Raw;
 use mon\orm\Model;
+use mon\util\Instance;
 
 date_default_timezone_set('PRC');
 
@@ -23,9 +25,9 @@ Db::setConfig($config);
 
 class Test extends Model
 {
-	protected $table = 'mon_admin';
+	use Instance;
 
-	protected $readonly = ['username'];
+	protected $table = 'invest_cate';
 
 	/**
 	 * 查询场景传参
@@ -39,36 +41,29 @@ class Test extends Model
 	{
 		return $query->where('id', $id)->where('status', $status);
 	}
+
+	public function demo()
+	{
+		$check = $this->validate()->check();
+	}
 }
 
-$test = new Test();
+// $data = Test::instance()->allowField(['status'])->save(['name' => '111', 'status' => 2], ['id' => 1]);
+$map = [
+	['a', '=', 1],
+	['b', null],
+	['c',  new Raw('abc')],
+	['d', '<>', new Raw('111')],
+	['e|f', '<>', new Raw('222')],
+	new Raw('g > 4'),
+	['x'],
+	['y', 1]
+];
+// $data = Test::instance()->where($map)->where('h', 'i')->where('s', '<>', 'k')->orderRand()->debug()->select();
+$data = Test::instance()->where($map)->where('h', 'i')->where('s', '<>', 'k')->order(new Raw('abc'))->field(new Raw('CONCAT(a, "、") AS aa'))->debug()->select();
 
-try {
-	// scope参数传递
-	// $data = $test->scope('args', 51)->select();
-	// $data = $test->scope('args', 1, 1)->select();
+debug($data);
 
-	// scope不存在，抛出异常
-	// $data = $test->scope('argss', 60, 1)->select();
 
-	$info = [
-		'username'		=> 'bb',
-		'password'		=> md5(123456),
-		'salt'			=> 'aabb',
-		'create_time'	=> '123456789',
-		'update_time'	=> '123456789',
-		'asdf'			=> 1,
-		'sdfgg'			=> 2,
-	];
-	// 设置过滤字段
-	// $save = $test->allowField(['username', 'password', 'salt', 'create_time', 'update_time'])->save($info);
-
-	// 字段只读，无法更新
-	$save = $test->save(['username' => 'abc'], ['id' => 3]);
-
-	var_dump($save, $test->getLastSql());
-	// var_dump($data, $test->getLastSql());
-} catch (\mon\orm\exception\MondbException $e) {
-	var_dump($e->getMessage());
-	var_dump($e->getCode());
-}
+// $raw = new Raw('aaaaa');
+// echo $raw;

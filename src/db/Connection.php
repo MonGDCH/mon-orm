@@ -5,8 +5,8 @@ namespace mon\orm\db;
 use PDO;
 use Throwable;
 use Exception;
-use PDOException;
 use mon\orm\Db;
+use PDOException;
 use mon\orm\db\Query;
 use mon\orm\exception\MondbException;
 

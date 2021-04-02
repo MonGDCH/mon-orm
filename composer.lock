@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "mongdch/mon-util",
-            "version": "1.2.8",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MonGDCH/mon-util.git",
-                "reference": "b0024ac96d4311554a767bd9cad0e93c893d9058"
+                "reference": "1de8c9a6c935b1b37823eda6c40585487c54aafe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/b0024ac96d4311554a767bd9cad0e93c893d9058",
-                "reference": "b0024ac96d4311554a767bd9cad0e93c893d9058",
+                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/1de8c9a6c935b1b37823eda6c40585487c54aafe",
+                "reference": "1de8c9a6c935b1b37823eda6c40585487c54aafe",
                 "shasum": ""
             },
             "require": {
@@ -29,7 +29,7 @@
                     "mon\\util\\": "src/"
                 },
                 "files": [
-                    "src/function.php"
+                    "src/functions.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -60,9 +60,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MonGDCH/mon-util/issues",
-                "source": "https://github.com/MonGDCH/mon-util/tree/1.2.8"
+                "source": "https://github.com/MonGDCH/mon-util/tree/1.3.1"
             },
-            "time": "2021-03-01T06:43:17+00:00"
+            "time": "2021-03-18T10:13:40+00:00"
         }
     ],
     "packages-dev": [],

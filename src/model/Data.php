@@ -4,10 +4,10 @@ namespace mon\orm\model;
 
 use Countable;
 use ArrayAccess;
+use mon\orm\Model;
 use ArrayIterator;
 use JsonSerializable;
 use IteratorAggregate;
-use mon\orm\Model;
 use mon\orm\model\DataCollection;
 
 /**

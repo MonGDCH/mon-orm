@@ -5,13 +5,15 @@ namespace mon\orm\db;
 use PDO;
 use Closure;
 use Exception;
+use Throwable;
 use mon\orm\Db;
 use PDOStatement;
 use mon\orm\Model;
 use mon\orm\db\Builder;
+use mon\orm\model\Data;
 use mon\orm\db\Connection;
+use mon\orm\model\DataCollection;
 use mon\orm\exception\MondbException;
-use Throwable;
 
 /**
  * 查询构造器
@@ -40,7 +42,7 @@ class Query
      *
      * @var Model
      */
-    protected $model;
+    protected $model = null;
 
     /**
      * 查询表
@@ -539,11 +541,14 @@ class Query
     /**
      * COUNT查询
      * 
-     * @param string $field 字段名
+     * @param string|Raw $field 字段名
      * @return integer|string   结果集
      */
     public function count($field = '*')
     {
+        if ($field instanceof Raw) {
+            $field = $field->getValue();
+        }
         $result = $this->field('COUNT(' . $field . ') AS mondb_count')->find();
         if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
@@ -556,11 +561,14 @@ class Query
     /**
      * SUM查询
      * 
-     * @param string $field 字段名
+     * @param string|Raw $field 字段名
      * @return float|integer    结果集
      */
     public function sum($field)
     {
+        if ($field instanceof Raw) {
+            $field = $field->getValue();
+        }
         $result = $this->field('SUM(' . $field . ') AS mondb_sum')->find();
         if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
@@ -573,11 +581,14 @@ class Query
     /**
      * MIN查询
      *
-     * @param string $field 字段名
+     * @param string|Raw $field 字段名
      * @return mixed  结果集
      */
     public function min($field)
     {
+        if ($field instanceof Raw) {
+            $field = $field->getValue();
+        }
         $result = $this->field('MIN(' . $field . ') AS mondb_min')->find();
         if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
@@ -590,11 +601,14 @@ class Query
     /**
      * MAX查询
      * 
-     * @param string $field 字段名
+     * @param string|Raw $field 字段名
      * @return mixed    结果集
      */
     public function max($field)
     {
+        if ($field instanceof Raw) {
+            $field = $field->getValue();
+        }
         $result = $this->field('MAX(' . $field . ') AS mondb_max')->find();
         if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
@@ -607,11 +621,14 @@ class Query
     /**
      * AVG查询
      * 
-     * @param string $field 字段名
+     * @param string|Raw $field 字段名
      * @return mixed    结果集
      */
     public function avg($field)
     {
+        if ($field instanceof Raw) {
+            $field = $field->getValue();
+        }
         $result = $this->field('AVG(' . $field . ') AS mondb_avg')->find();
         if ($result instanceof PDOStatement || is_string($result)) {
             // 返回PDOStatement对象或者查询语句
@@ -703,12 +720,15 @@ class Query
     /**
      * 查询字符串
      *
-     * @param  string|array $field 查询字段
+     * @param  mixed $field 查询字段
      * @return Query    当前实例自身
      */
     public function field($field)
     {
         if (empty($field)) {
+            return $this;
+        } elseif ($field instanceof Raw) {
+            $this->options['field'][] = $field;
             return $this;
         }
         if (is_string($field)) {
@@ -786,6 +806,17 @@ class Query
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * 随机排序
+     *
+     * @return Query 当前实例自身
+     */
+    public function orderRand()
+    {
+        $this->options['order'][] = '[rand]';
         return $this;
     }
 
@@ -1232,7 +1263,7 @@ class Query
     protected function parseWhereExp($logic, $field, $op, $condition, $param = [], $strict = false)
     {
         $logic = strtoupper($logic);
-        if ($field instanceof Closure) {
+        if ($field instanceof Raw) {
             $this->options['where'][$logic][] = is_string($op) ? [$op, $field] : $field;
             return;
         }
@@ -1432,7 +1463,7 @@ class Query
      *
      * @param  array $where    where条件，存在则为更新，反之新增
      * @throws MondbException
-     * @return \mon\orm\model\Data 结果集
+     * @return Data|null 结果集
      */
     public function get($where = [])
     {
@@ -1457,7 +1488,7 @@ class Query
      *
      * @param  array $where    where条件，存在则为更新，反之新增
      * @throws MondbException
-     * @return \mon\orm\model\DataCollection 结果集
+     * @return DataCollection|null 结果集
      */
     public function all($where = [])
     {

@@ -187,7 +187,7 @@ class Builder
                 if (is_array($fields) && !in_array($key, $fields)) {
                     // 过滤掉合法字段外的字段
                     unset($data[$key]);
-                } else if (is_null($val)) {
+                } elseif (is_null($val)) {
                     $data[$key] = 'NULL';
                 } elseif (is_scalar($val)) {
                     $data[$key] = $this->parseValue($val, $key);
@@ -293,6 +293,8 @@ class Builder
     {
         if (is_numeric($key)) {
             return $key;
+        } elseif ($key instanceof Raw) {
+            return $key->getValue();
         }
 
         $key = trim($key);
@@ -425,20 +427,35 @@ class Builder
     /**
      * 生成查询条件SQL
      *
-     * @param mixed     $where
-     * @param array     $options
+     * @param mixed $where
+     * @param array $options
      * @return string
      */
-    public function buildWhere($where, $options)
+    protected function buildWhere($where, $options)
     {
         if (empty($where)) {
             $where = [];
         }
 
         $whereStr = '';
-        foreach ($where as $key => $val) {
+        foreach ($where as $logic => $val) {
             $str = [];
             foreach ($val as $field => $value) {
+
+                if ($value instanceof Raw) {
+                    // 表达式查询
+                    $str[] = ' ' . $logic . ' ( ' . $value->getValue() . ' )';
+                    continue;
+                }
+
+                // 二维数组where支持，例：[['a', '=', 'b'], ['b', 'in', ['1', '2']]]
+                if (is_array($value) && count($value) == 3) {
+                    if (key($value) !== 0) {
+                        throw new MondbException('where express error:' . var_export($value, true), MondbException::PARSE_WHERE_EXPRESS_ERROR);
+                    }
+                    $field = array_shift($value);
+                }
+
                 if (strpos($field, '|')) {
                     // 不同字段使用相同查询条件（OR）
                     $array = explode('|', $field);
@@ -446,7 +463,7 @@ class Builder
                     foreach ($array as $k) {
                         $item[] = $this->parseWhereItem($k, $value, '', $options);
                     }
-                    $str[] = ' ' . $key . ' ( ' . implode(' OR ', $item) . ' )';
+                    $str[] = ' ' . $logic . ' ( ' . implode(' OR ', $item) . ' )';
                 } elseif (strpos($field, '&')) {
                     // 不同字段使用相同查询条件（AND）
                     $array = explode('&', $field);
@@ -454,18 +471,24 @@ class Builder
                     foreach ($array as $k) {
                         $item[] = $this->parseWhereItem($k, $value, '', $options);
                     }
-                    $str[] = ' ' . $key . ' ( ' . implode(' AND ', $item) . ' )';
-                } else if (is_int($field) && is_string($value)) {
-                    // 字符串直接写入的where条件
-                    $str[] = ' ' . $key . ' ( ' . $value . ' ) ';
+                    $str[] = ' ' . $logic . ' ( ' . implode(' AND ', $item) . ' )';
+                } elseif (is_int($field)) {
+                    if (is_string($value)) {
+                        // 字符串直接写入的where条件
+                        $str[] = ' ' . $logic . ' ( ' . $value . ' ) ';
+                    } elseif (is_array($value)) {
+                        $field = array_shift($value);
+                        $value = isset($value[0]) ? (is_null($value[0]) ? ['null', ''] : ['=', $value[0]]) : ['null', ''];
+                        $str[] = ' ' . $logic . ' ' . $this->parseWhereItem($field, $value, $logic, $options);
+                    }
                 } else {
                     // 对字段使用表达式查询
                     $field = is_string($field) ? $field : '';
-                    $str[] = ' ' . $key . ' ' . $this->parseWhereItem($field, $value, $key, $options);
+                    $str[] = ' ' . $logic . ' ' . $this->parseWhereItem($field, $value, $logic, $options);
                 }
             }
 
-            $whereStr .= empty($whereStr) ? substr(implode(' ', $str), strlen($key) + 1) : implode(' ', $str);
+            $whereStr .= empty($whereStr) ? substr(implode(' ', $str), strlen($logic) + 1) : implode(' ', $str);
         }
 
         return $whereStr;
@@ -587,6 +610,8 @@ class Builder
             $value = $value ? '1' : '0';
         } elseif (is_null($value)) {
             $value = 'null';
+        } elseif ($value instanceof Raw) {
+            $value = $value->getValue();
         }
         return $value;
     }
@@ -625,10 +650,11 @@ class Builder
         if (empty($order)) {
             return '';
         }
-
         $array = [];
         foreach ($order as $key => $val) {
-            if ('[rand]' == $val) {
+            if ($val instanceof Raw) {
+                $array[] = $val->getValue();
+            } elseif ('[rand]' == $val) {
                 $array[] = $this->parseRand();
             } else {
                 if (is_numeric($key)) {
@@ -636,14 +662,13 @@ class Builder
                 } else {
                     $sort = $val;
                 }
-                $sort    = strtoupper($sort);
-                $sort    = in_array($sort, ['ASC', 'DESC'], true) ? ' ' . $sort : '';
+                $sort = strtoupper($sort);
+                $sort = in_array($sort, ['ASC', 'DESC'], true) ? ' ' . $sort : '';
                 $array[] = $this->parseKey($key, $options, true) . $sort;
             }
         }
-        $order = implode(',', $array);
 
-        return !empty($order) ? ' ORDER BY ' . $order : '';
+        return ' ORDER BY ' . implode(',', $array);
     }
 
     /**
@@ -653,7 +678,7 @@ class Builder
      */
     protected function parseRand()
     {
-        return 'rand()';
+        return 'RAND()';
     }
 
     /**
@@ -680,6 +705,7 @@ class Builder
         }
         $type = $union['type'];
         unset($union['type']);
+        $sql = [];
         foreach ($union as $u) {
             if (is_string($u)) {
                 $sql[] = $type . ' ( ' . $u . ' )';
@@ -691,7 +717,7 @@ class Builder
     /**
      * 设置锁机制
      *
-     * @param bool|string $lock
+     * @param boolean|string $lock
      * @return string
      */
     protected function parseLock($lock = false)
@@ -701,6 +727,8 @@ class Builder
         } elseif (is_string($lock)) {
             return ' ' . trim($lock) . ' ';
         }
+
+        return '';
     }
 
     /**
@@ -745,7 +773,6 @@ class Builder
             return [];
         }
 
-        $fields = $options['field'];
         $result = [];
         foreach ($data as $key => $val) {
             $item = $this->parseKey($key, $options, true);
@@ -755,10 +782,10 @@ class Builder
             } elseif (is_array($val) && !empty($val)) {
                 switch (strtolower($val[0])) {
                     case 'inc':
-                        $result[$item] = $item . '+' . floatval($val[1]);
+                        $result[$item] = $item . ' + ' . floatval($val[1]);
                         break;
                     case 'dec':
-                        $result[$item] = $item . '-' . floatval($val[1]);
+                        $result[$item] = $item . ' - ' . floatval($val[1]);
                         break;
                 }
             } elseif (is_scalar($val)) {

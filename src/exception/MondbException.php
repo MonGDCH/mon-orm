@@ -18,6 +18,11 @@ class MondbException extends Exception
 	const PARSE_WHERE_ERROR = 10100;
 
 	/**
+	 * 多维查询条件只支持索引数组
+	 */
+	const PARSE_WHERE_EXPRESS_ERROR = 10110;
+
+	/**
 	 * 查询条件为空
 	 */
 	const WHERE_IS_NULL = 10110;
@@ -76,4 +81,9 @@ class MondbException extends Exception
 	 * 操作模型不支持自动完成 - saveAll方法
 	 */
 	const MODEL_NOT_SUPPORT_SAVEALL = 10740;
+
+	/**
+	 * 表达式格式错误
+	 */
+	const RAW_EXPRESSION_FAILD = 10800;
 }
