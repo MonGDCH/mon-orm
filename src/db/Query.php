@@ -663,7 +663,7 @@ class Query
     /**
      * 设置表名(含表前缀)
      *
-     * @param  string $table 表名
+     * @param  string|Raw $table 表名
      * @return Query    当前实例自身
      */
     public function table($table)
@@ -690,6 +690,8 @@ class Query
                 $table = [$table => $alias];
                 $this->alias($table);
             }
+        } else if ($table instanceof Raw) {
+            $table = $table->getValue();
         }
 
         $this->options['table'] = $table;

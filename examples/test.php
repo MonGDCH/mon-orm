@@ -60,7 +60,11 @@ $map = [
 	['y', 1]
 ];
 // $data = Test::instance()->where($map)->where('h', 'i')->where('s', '<>', 'k')->orderRand()->debug()->select();
-$data = Test::instance()->where($map)->where('h', 'i')->where('s', '<>', 'k')->order(new Raw('abc'))->field(new Raw('CONCAT(a, "、") AS aa'))->debug()->select();
+// $data = Test::instance()->where($map)->where('h', 'i')->where('s', '<>', 'k')->order(new Raw('abc'))->field(new Raw('CONCAT(a, "、") AS aa'))->debug()->setInc('aa,vv', 1);
+
+// $data = Db::table(new Raw('(select * from a) AS a'))->where('a', 1)->debug()->find();
+
+$data = Test::instance()->alias('b')->join(new Raw('(select * from we_user) AS a'), 'a.uid = b.id')->debug()->select();
 
 debug($data);
 
