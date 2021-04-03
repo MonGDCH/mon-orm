@@ -16,7 +16,7 @@ $config = [
 	// 用户名
 	'username'        => 'root',
 	// 密码
-	'password'        => 'root',
+	'password'        => '19930603',
 	// 端口
 	'port'        	  => '3306',
 ];
@@ -44,7 +44,8 @@ class Test extends Model
 
 	public function demo()
 	{
-		$check = $this->validate()->check();
+		$check = $this->validate();
+		debug($check);
 	}
 }
 
@@ -64,8 +65,9 @@ $map = [
 
 // $data = Db::table(new Raw('(select * from a) AS a'))->where('a', 1)->debug()->find();
 
-$data = Test::instance()->alias('b')->join(new Raw('(select * from we_user) AS a'), 'a.uid = b.id')->debug()->select();
+// $data = Test::instance()->alias('b')->join(new Raw('(select * from we_user) AS a'), 'a.uid = b.id')->debug()->select();
 
+$data = Test::instance()->demo();
 debug($data);
 
 

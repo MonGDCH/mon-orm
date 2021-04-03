@@ -21,16 +21,16 @@ $config = [
 class Test
 {
 	// 获取最后写入的ID
-	public function getLastId($option, $query)
+	public function getLastId($connect, $option)
 	{
-		var_dump($query->getLastInsID());
+		var_dump($connect->getLastInsID());
 	}
 
 	// 获取最后执行的SQL
-	public function getLastSql($option, $query)
+	public function handler($connect, $option)
 	{
 		// var_dump($option);
-		var_dump($query->getLastSql());
+		var_dump($connect->getLastSql());
 	}
 }
 
@@ -38,19 +38,19 @@ Db::setConfig($config);
 
 // 绑定事件
 // 链接DB事件
-Db::event('connect', function ($option, $query) {
-	// var_dump($option);
-	// var_dump($query->getLastSql());
+Db::listen('connect', function ($connect, $query) {
+	// debug($connect->getLastSql());
+	// debug($query);
 });
-Db::event('select', 'Test@getLastSql');
-Db::event('insert', 'Test@getLastId');
-Db::event('delete', 'Test@getLastId');
-Db::event('update', 'Test@getLastId');
+// Db::listen('select', Test::class);
+// Db::listen('insert', Test::class);
+// Db::listen('delete', Test::class);
+// Db::listen('update', Test::class);
 
-// 全局查询事件，如已绑定了select事件，使用select方法进行查询，会同时触发2种事件
-Db::event('query', 'Test@getLastSql');
-// 全局指令事件，如已绑定了insert、update、delete事件，使用对应方法执行指令，会同时触发2种事件
-Db::event('execute', 'Test@getLastSql');
+// // 全局查询事件，如已绑定了select事件，使用select方法进行查询，会同时触发2种事件
+// Db::listen('query', Test::class);
+// // 全局指令事件，如已绑定了insert、update、delete事件，使用对应方法执行指令，会同时触发2种事件
+// Db::listen('execute', Test::class);
 
 // $res = Db::table('test')->select();
 
@@ -68,10 +68,10 @@ Db::event('execute', 'Test@getLastSql');
 // 	'status' => 9
 // ]);
 
-// $res = Db::table('test')->where('id', '4')->delete();
+$res = Db::table('addons_ads')->where('id', '4')->find();
 
 // $res = Db::query('select * from test');
 
-$res = Db::execute("INSERT INTO `test` (`name` , `status`) VALUES ('w3' , '6')");
+// $res = Db::execute("INSERT INTO `test` (`name` , `status`) VALUES ('w3' , '6')");
 
 var_dump($res);
