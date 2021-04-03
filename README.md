@@ -205,6 +205,7 @@ $data = $test->scope('test')->where('id', 20)->all();
 * 增加\mon\orm\db\Raw原生表达式对象，增强原生查询能力
 * 优化模型get、all查询，查询数据为空时，返回null而非空对象
 * 模型增加内置验证器，可通过定义validate属性设置绑定的验证器，通过validate方法获取验证器
+* 优化DB事件，支持单个事件绑定多个回调，Db::event方法改为Db::listen方法
 
 ### 2.3.2
 

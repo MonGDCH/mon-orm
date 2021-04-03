@@ -442,6 +442,8 @@ class Connection
             // 只有当事务无嵌套才开启事务
             if ($this->transLevel == 1) {
                 $this->getLink()->beginTransaction();
+                // 触发开启事务事件
+                Db::trigger('startTrans', $this, $this->config);
             } elseif ($this->transLevel > 1) {
                 $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
             }
@@ -464,6 +466,8 @@ class Connection
     {
         if ($this->transLevel == 1) {
             $this->getLink()->commit();
+            // 触发提交事务事件
+            Db::trigger('commitTrans', $this, $this->config);
         }
         --$this->transLevel;
     }
@@ -478,6 +482,8 @@ class Connection
         if ($this->transLevel == 1) {
             $this->transLevel = 0;
             $this->getLink()->rollBack();
+            // 触发回滚事务事件
+            Db::trigger('rollbackTrans', $this, $this->config);
         } elseif ($this->transLevel > 1) {
             $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
         }
@@ -493,6 +499,8 @@ class Connection
     public function startTransXA($xid)
     {
         $this->getLink()->exec("XA START '$xid'");
+        // 触发开启跨库事件
+        Db::trigger('startTransXA', $this, $this->config);
     }
 
     /**
@@ -505,6 +513,8 @@ class Connection
     {
         $this->getLink()->exec("XA END '$xid'");
         $this->getLink()->exec("XA PREPARE '$xid'");
+        // 触发预编译XA事务事件
+        Db::trigger('prepareTransXA', $this, $this->config);
     }
 
     /**
@@ -516,6 +526,8 @@ class Connection
     public function commitXA($xid)
     {
         $this->getLink()->exec("XA COMMIT '$xid'");
+        // 触发提交跨库事务事件
+        Db::trigger('commitTransXA', $this, $this->config);
     }
 
     /**
@@ -527,6 +539,8 @@ class Connection
     public function rollbackXA($xid)
     {
         $this->getLink()->exec("XA ROLLBACK '$xid'");
+        // 触发回滚跨库事务事件
+        Db::trigger('rollbackTransXA', $this, $this->config);
     }
 
     /**

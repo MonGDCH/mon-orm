@@ -86,4 +86,9 @@ class MondbException extends Exception
 	 * 表达式格式错误
 	 */
 	const RAW_EXPRESSION_FAILD = 10800;
+
+	/**
+	 * 事件回调异常
+	 */
+	const EVENT_CALLBACK_FAILD = 10900;
 }

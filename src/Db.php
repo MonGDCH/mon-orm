@@ -2,8 +2,10 @@
 
 namespace mon\orm;
 
+use Closure;
 use mon\util\Container;
 use mon\orm\db\Connection;
+use mon\orm\exception\MondbException;
 
 /**
  * DB操作类
@@ -46,11 +48,40 @@ class Db
 	private static $pool = [];
 
 	/**
-	 * 查询事件
+	 * 事件钩子
 	 *
 	 * @var array
 	 */
-	private static $event = [];
+	private static $events = [
+		// 链接DB
+		'connect'			=> [],
+		// select查询
+		'select'			=> [],
+		// insert查询
+		'insert'			=> [],
+		// delete查询
+		'delete'			=> [],
+		// update查询
+		'update'			=> [],
+		// query全局查询
+		'query'				=> [],
+		// execute全局指令
+		'execute'			=> [],
+		// 开启事务
+		'startTrans'		=> [],
+		// 提交事务
+		'commitTrans'		=> [],
+		// 回滚事务
+		'rollbackTrans'		=> [],
+		// 开启事扩库务
+		'startTransXA'		=> [],
+		// 开启预编译XA事务
+		'prepareTransXA'	=> [],
+		// 提交跨库事务
+		'commitTransXA'		=> [],
+		// 回滚跨库事务
+		'rollbackTransXA'	=> [],
+	];
 
 	/**
 	 * DB配置
@@ -84,45 +115,6 @@ class Db
 	}
 
 	/**
-	 * 注册回调方法
-	 *
-	 * @param string   $event    事件名
-	 * @param \Closure  $callback 回调方法
-	 * @return void
-	 */
-	public static function event($event, $callback)
-	{
-		self::$event[$event] = $callback;
-	}
-
-	/**
-	 * 触发事件
-	 *
-	 * @param string 	 $event   		事件名
-	 * @param array  	 $params  		额外参数
-	 * @param Connection $connection	链接实例
-	 * @return mixed
-	 */
-	public static function trigger($event, Connection $connection, $params = [])
-	{
-		if (isset(self::$event[$event])) {
-			$callback = self::$event[$event];
-			return Container::instance()->invoke($callback, [$params, $connection]);
-		}
-	}
-
-	/**
-	 * 配置对应加密key
-	 *
-	 * @param  array  $config 配置信息
-	 * @return string 配置key值
-	 */
-	public static function getKey(array $config)
-	{
-		return md5(serialize($config));
-	}
-
-	/**
 	 * 设置DB配置，方便直接调用
 	 *
 	 * @param array  $config 配置信息
@@ -141,6 +133,64 @@ class Db
 	public static function getConfig()
 	{
 		return self::$config;
+	}
+
+	/**
+	 * 监听事件
+	 *
+	 * @param mixed $event   钩子名称
+	 * @param mixed $callbak 钩子回调
+	 * @return void
+	 */
+	public static function listen($event, $callbak)
+	{
+		isset(self::$events[$event]) || self::$events[$event] = [];
+		self::$events[$event][] = $callbak;
+	}
+
+	/**
+	 * 监听事件，执行事件回调
+	 *
+	 * @param mixed $event 事件名
+	 * @param Connection $connection 链接实例
+	 * @param mixed &$params 参数
+	 * @throws MondbException
+	 * @return array
+	 */
+	public static function trigger($event, Connection $connection, $params = [])
+	{
+		$result = [];
+		if (isset(self::$events[$event])) {
+			$callbacks = self::$events[$event];
+			foreach ($callbacks as $k => $callback) {
+				if (is_string($callback) && !empty($callback)) {
+					$class = [$callback, 'handler'];
+				} elseif ($callback instanceof Closure) {
+					$class = $callback;
+				} else {
+					throw new MondbException('Event callback faild!', MondbException::EVENT_CALLBACK_FAILD);
+				}
+
+				$result[$k] = Container::instance()->invoke($class, [$connection, $params]);
+				if ($result[$k] === false) {
+					// 如果返回false 则中断事件执行
+					break;
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * 配置对应加密key
+	 *
+	 * @param  array  $config 配置信息
+	 * @return string 配置key值
+	 */
+	public static function getKey(array $config)
+	{
+		return md5(serialize($config));
 	}
 
 	/**
