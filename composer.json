@@ -1,14 +1,14 @@
 {
     "name": "mongdch/mon-orm",
     "description": "Mysql database ORM for PHP",
-    "version": "v2.4.0",
+    "version": "v2.4.1",
     "keywords": [
         "mysql",
         "orm",
         "database",
         "数据库"
     ],
-    "homepage": "http://blog.gdmonlam.com/",
+    "homepage": "http://gdmon.com/",
     "license": "Apache-2.0",
     "authors": [
         {

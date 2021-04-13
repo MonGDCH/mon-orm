@@ -126,13 +126,18 @@ class Db
 	}
 
 	/**
-	 * 获取Db配置
+	 * 配置对应加密key
 	 *
+	 * @param string $name 配置节点名称
 	 * @return array 数据库配置信息
 	 */
-	public static function getConfig()
+	public static function getConfig($name = '')
 	{
-		return self::$config;
+		if ($name === '') {
+			return self::$config;
+		}
+
+		return isset(self::$config[$name]) ? self::$config[$name] : null;
 	}
 
 	/**

@@ -16,7 +16,7 @@ $config = [
 	// 用户名
 	'username'        => 'root',
 	// 密码
-	'password'        => '19930603',
+	'password'        => 'root',
 	// 端口
 	'port'        	  => '3306',
 ];
@@ -27,7 +27,7 @@ class Test extends Model
 {
 	use Instance;
 
-	protected $table = 'invest_cate';
+	protected $table = 'chat_app';
 
 	/**
 	 * 查询场景传参
@@ -37,7 +37,7 @@ class Test extends Model
 	 * @param  integer $status [description]
 	 * @return [type]          [description]
 	 */
-	protected function scopeArgs($query, $id = 1, $status = 0)
+	protected function scopeArgs($query, $id = 1, $status = 1)
 	{
 		return $query->where('id', $id)->where('status', $status);
 	}
@@ -67,7 +67,7 @@ $map = [
 
 // $data = Test::instance()->alias('b')->join(new Raw('(select * from we_user) AS a'), 'a.uid = b.id')->debug()->select();
 
-$data = Test::instance()->demo();
+$data = Test::instance()->scope('args')->find();
 debug($data);
 
 

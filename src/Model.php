@@ -4,10 +4,10 @@ namespace mon\orm;
 
 use Closure;
 use mon\orm\Db;
+use mon\orm\db\Query;
 use mon\util\Validate;
 use mon\util\Container;
 use mon\orm\model\Data;
-use mon\orm\db\Connection;
 use mon\orm\model\DataCollection;
 use mon\orm\exception\MondbException;
 
@@ -186,7 +186,7 @@ abstract class Model
      * 获取DB实例
      *
      * @param boolean $newLink 是否重新创建链接
-     * @return Connection
+     * @return Query
      */
     public function db($newLink = false)
     {
@@ -207,7 +207,7 @@ abstract class Model
      *
      * @param  string|Closure $name 场景名称或者闭包函数
      * @param  mixed $args  可变传参
-     * @return Connection    返回DB操作实例
+     * @return Query    返回DB操作实例
      */
     public function scope($name, ...$args)
     {
@@ -271,7 +271,7 @@ abstract class Model
      *
      * @param  array $where    where条件
      * @param  mixed $db       查询对象实例
-     * @return Data|null  数据集对象
+     * @return Data  数据集对象
      */
     public function get($where = [], $db = null)
     {
@@ -280,10 +280,6 @@ abstract class Model
             $db = $this->db();
         }
         $data = $db->where($where)->find();
-        if (!$data) {
-            return null;
-        }
-
         return new Data($data, $this, $this->append);
     }
 
@@ -292,7 +288,7 @@ abstract class Model
      *
      * @param  array  $where    where条件
      * @param  mixed  $db 查询对象实例
-     * @return DataCollection|null  数据集对象
+     * @return DataCollection  数据集对象
      */
     public function all($where = [], $db = null)
     {
@@ -301,9 +297,6 @@ abstract class Model
             $db = $this->db();
         }
         $data = $db->where($where)->select();
-        if (!$data) {
-            return null;
-        }
         // 有数据，生成数据集合
         foreach ($data as &$item) {
             // 遍历转换生成对象集合

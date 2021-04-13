@@ -142,8 +142,6 @@ class Connection
         if (!empty($config)) {
             $this->config = array_merge((array) $this->config, $config);
         }
-
-        $this->connect();
     }
 
     /**
@@ -254,16 +252,12 @@ class Connection
             if (!empty($config) && is_array($config)) {
                 $this->config = array_merge((array) $this->config, $config);
             }
-
             // 生成mysql连接dsn
             $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
-            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') .
-                ';dbname=' . $this->config['database'];
-
+            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
             if (!empty($this->config['charset'])) {
                 $dsn .= ';charset=' . $this->config['charset'];
             }
-
             // 链接
             $this->link = new PDO(
                 $dsn,
@@ -271,7 +265,6 @@ class Connection
                 $this->config['password'],
                 $this->config['params']
             );
-
             // 触发链接事件
             Db::trigger('connect', $this, $this->config);
 
@@ -337,7 +330,6 @@ class Connection
             }
             // 执行查询
             $this->PDOStatement->execute();
-
             // 触发全局查询事件
             Db::trigger('query', $this, $bind);
 
@@ -406,6 +398,7 @@ class Connection
             Db::trigger('execute', $this, $bind);
             // 返回影响行数
             $this->numRows = $this->PDOStatement->rowCount();
+
             return $this->numRows;
         } catch (PDOException $e) {
             // 断线重连
@@ -561,7 +554,7 @@ class Connection
                 $info[$val['field']] = [
                     'name'    => $val['field'],
                     'type'    => $val['type'],
-                    'notnull' => (bool) ('' === $val['null']), // not null is empty, null is yes
+                    'notnull' => (bool) ('' === $val['null']),
                     'default' => $val['default'],
                     'primary' => (strtolower($val['key']) == 'pri'),
                     'autoinc' => (strtolower($val['extra']) == 'auto_increment'),

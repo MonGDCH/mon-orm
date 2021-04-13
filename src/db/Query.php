@@ -1273,7 +1273,6 @@ class Query
         if ($strict) {
             // 使用严格模式查询
             $where[$field] = [$op, $condition];
-
             // 记录一个字段多次查询条件
             $this->options['multi'][$logic][$field][] = $where[$field];
         } elseif (is_null($op) && is_null($condition)) {
@@ -1465,7 +1464,7 @@ class Query
      *
      * @param  array $where    where条件，存在则为更新，反之新增
      * @throws MondbException
-     * @return Data|null 结果集
+     * @return Data 结果集
      */
     public function get($where = [])
     {
@@ -1490,7 +1489,7 @@ class Query
      *
      * @param  array $where    where条件，存在则为更新，反之新增
      * @throws MondbException
-     * @return DataCollection|null 结果集
+     * @return DataCollection 结果集
      */
     public function all($where = [])
     {
