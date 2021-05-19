@@ -2,7 +2,7 @@
 
 namespace mon\orm\db;
 
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * 查询语句构造对象
@@ -451,7 +451,7 @@ class Builder
                 // 二维数组where支持，例：[['a', '=', 'b'], ['b', 'in', ['1', '2']]]
                 if (is_array($value) && count($value) == 3) {
                     if (key($value) !== 0) {
-                        throw new MondbException('where express error:' . var_export($value, true), MondbException::PARSE_WHERE_EXPRESS_ERROR);
+                        throw new DbException('where express error:' . var_export($value, true), DbException::PARSE_WHERE_EXPRESS_ERROR);
                     }
                     $field = array_shift($value);
                 }
@@ -502,7 +502,7 @@ class Builder
      * @param  string $rule     规则
      * @param  mixed  $options  查询参数
      * @param  mixed  $bindName 绑定值
-     * @throws MondbException
+     * @throws DbException
      * @return string
      */
     protected function parseWhereItem($field, $val, $rule = '', $options = [], $bindName = null)
@@ -538,7 +538,7 @@ class Builder
             if (isset($this->exp[$exp])) {
                 $exp = $this->exp[$exp];
             } else {
-                throw new MondbException('where express error:' . $exp, MondbException::PARSE_WHERE_ERROR);
+                throw new DbException('where express error:' . $exp, DbException::PARSE_WHERE_ERROR);
             }
         }
         $bindName = $bindName ?: 'where_' . $rule . '_' . str_replace(['.', '-'], '_', $field);

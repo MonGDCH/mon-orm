@@ -3,19 +3,72 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Db;
+use mon\orm\Model;
 
-$config = [
-	'database' => 'test',
-	'username' => 'root',
-	'password' => 'root',
-];
+$config = require('config.php');
 
-// 通过connect方法连接DB操作DB
-$data1 = Db::connect($config)->table('lmf_user')->select();
-
-// 通过setConfig设置全局默认DB配置操作DB
 Db::setConfig($config);
-$data2 = Db::table('lmf_user a')->join('blog_user b', 'a.id=b.id', 'left')->select();
-$sql = Db::getLastSql();
 
-var_dump($data1, $data2, $sql);
+class A extends Model
+{
+	protected $table = 'chat_app';
+}
+
+class B extends Model
+{
+	protected $table = 'mon_config';
+	protected $connection = 'test';
+}
+
+class C extends Model
+{
+	protected $config = [
+		'host' => 'louis.db',
+		'database' => 'new_sysccd',
+		'username' => 'monmon',
+		'password' => 'monmon',
+		'params'          => [
+			PDO::ATTR_ERRMODE           => PDO::ERRMODE_SILENT,
+			PDO::ATTR_EMULATE_PREPARES  => true,
+		]
+	];
+}
+
+$data = (new A)->select();
+debug($data);
+
+
+$data2 = (new B)->select();
+debug($data2);
+
+$data3 = (new C)->query('call data_bridge("B21033115DtxM")');
+debug($data3);
+
+
+// $config2 = [
+// 	'host' => 'louis.db',
+// 	'database' => 'new_sysccd',
+// 	'username' => 'monmon',
+// 	'password' => 'monmon',
+// 	'params'          => [
+// 		PDO::ATTR_ERRMODE           => PDO::ERRMODE_SILENT,
+// 		PDO::ATTR_EMULATE_PREPARES  => true,
+// 	],
+// ];
+
+// $data2 = Db::connect($config2)->query('call data_bridge("B21033115DtxM")');
+
+// debug($data2);
+
+// $data3 = Db::connect('test')->table('cz_comment')->select();
+// debug($data3);
+
+// $data = Db::table('chat_stay')->select();
+// debug($data);
+// Db::setConfig($config);
+
+// $sql = 'call data_bridge("B21033115DtxM")';
+
+// $data = Db::query($sql);
+
+// debug($data);

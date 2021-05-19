@@ -2,7 +2,7 @@
 
 namespace mon\orm\db;
 
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * 原生表达式定义类
@@ -23,13 +23,13 @@ class Raw
      * 创建一个查询表达式
      *
      * @param  string  $value
-     * @throws MondbException
+     * @throws DbException
      * @return void
      */
     public function __construct($value)
     {
         if (!is_string($value)) {
-            throw new MondbException('Raw Expression not string', MondbException::RAW_EXPRESSION_FAILD);
+            throw new DbException('Raw Expression not string', DbException::RAW_EXPRESSION_FAILD);
         }
         $this->value = $value;
     }

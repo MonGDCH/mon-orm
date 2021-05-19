@@ -10,7 +10,7 @@ use Exception;
  * @author Mon <985558837@qq.com>
  * @version v1.0
  */
-class MondbException extends Exception
+class DbException extends Exception
 {
 	/**
 	 * 解析where条件失败

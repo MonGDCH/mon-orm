@@ -8,7 +8,7 @@ use Exception;
 use mon\orm\Db;
 use PDOException;
 use mon\orm\db\Query;
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * 链接DB
@@ -97,20 +97,25 @@ class Connection
         'password'                      => '',
         // 端口
         'port'                          => '3306',
-        // 数据库连接参数
-        'params'          => [
-            PDO::ATTR_CASE              => PDO::CASE_NATURAL,
-            PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
-            PDO::ATTR_STRINGIFY_FETCHES => false,
-            PDO::ATTR_EMULATE_PREPARES  => false,
-        ],
         // 数据库编码默认采用utf8
         'charset'                       => 'utf8',
         // 返回结果集类型
         'result_type'                   => PDO::FETCH_ASSOC,
         // 断线是否重连，注意：强制重连有可能导致数据库core掉
         'break_reconnect'               => false,
+    ];
+
+    /**
+     * 数据库连接参数
+     *
+     * @var array
+     */
+    protected $params = [
+        PDO::ATTR_CASE              => PDO::CASE_NATURAL,
+        PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ORACLE_NULLS      => PDO::NULL_NATURAL,
+        PDO::ATTR_STRINGIFY_FETCHES => false,
+        PDO::ATTR_EMULATE_PREPARES  => false,
     ];
 
     /**
@@ -243,7 +248,7 @@ class Connection
      * 链接DB
      *
      * @param  array  $config 配置信息
-     * @throws MondbException
+     * @throws DbException
      * @return Connection 实例自身
      */
     public function connect(array $config = [])
@@ -253,26 +258,37 @@ class Connection
                 $this->config = array_merge((array) $this->config, $config);
             }
             // 生成mysql连接dsn
-            $is_port = (isset($this->config['port']) && is_int($this->config['port'] * 1));
-            $dsn = 'mysql:host=' . $this->config['host'] . ($is_port ? ';port=' . $this->config['port'] : '') . ';dbname=' . $this->config['database'];
+            $dsn = 'mysql:host=' . $this->config['host'];
+            if (is_int($this->config['port'] * 1)) {
+                $dsn .= ';port=' . $this->config['port'];
+            }
+            if (!empty($this->config['database'])) {
+                $dsn .= ';dbname=' . $this->config['database'];
+            }
             if (!empty($this->config['charset'])) {
                 $dsn .= ';charset=' . $this->config['charset'];
             }
-            // 链接
+            // 连接参数
+            if (isset($this->config['params']) && is_array($this->config['params'])) {
+                $params = $this->config['params'] + $this->params;
+            } else {
+                $params = $this->params;
+            }
+            // 链接数据库
             $this->link = new PDO(
                 $dsn,
                 $this->config['username'],
                 $this->config['password'],
-                $this->config['params']
+                $params
             );
             // 触发链接事件
             Db::trigger('connect', $this, $this->config);
 
             return $this;
         } catch (PDOException $e) {
-            throw new MondbException(
+            throw new DbException(
                 'Link Error: ' . $e->getMessage(),
-                MondbException::LINK_FAILURE,
+                DbException::LINK_FAILURE,
                 $e
             );
         }
@@ -671,7 +687,7 @@ class Connection
      * 或者 ['value',123] 对应问号占位符
      *
      * @param array $bind 要绑定的参数列表
-     * @throws MondbException
+     * @throws DbException
      * @return void
      */
     protected function bindValue(array $bind = [])
@@ -688,9 +704,9 @@ class Connection
                 $result = $this->PDOStatement->bindValue($param, $val);
             }
             if (!$result) {
-                throw new MondbException(
+                throw new DbException(
                     "Bind value error: {$param}",
-                    MondbException::BIND_VALUE_ERROR
+                    DbException::BIND_VALUE_ERROR
                 );
             }
         }
@@ -700,7 +716,7 @@ class Connection
      * 存储过程的输入输出参数绑定
      *
      * @param array $bind 要绑定的参数列表
-     * @throws MondbException
+     * @throws DbException
      * @return void
      */
     protected function bindParam($bind)
@@ -715,9 +731,9 @@ class Connection
             }
             if (!$result) {
                 $param = array_shift($val);
-                throw new MondbException(
+                throw new DbException(
                     "Bind param error: {$param}",
-                    MondbException::BIND_VALUE_ERROR
+                    DbException::BIND_VALUE_ERROR
                 );
             }
         }

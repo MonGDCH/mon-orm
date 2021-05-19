@@ -5,7 +5,7 @@ namespace mon\orm;
 use Closure;
 use mon\util\Container;
 use mon\orm\db\Connection;
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * DB操作类
@@ -40,6 +40,13 @@ use mon\orm\exception\MondbException;
  */
 class Db
 {
+	/**
+	 * 默认配置节点名称
+	 * 
+	 * @var string
+	 */
+	const DEFAULT_KEY = 'default';
+
 	/**
 	 * DB实例列表
 	 *
@@ -93,19 +100,22 @@ class Db
 	/**
 	 * 链接Db
 	 *
-	 * @param  array   $config DB链接配置
+	 * @param  string|array   $config DB链接配置
 	 * @param  boolean $reset  链接标示，true则重连
 	 * @return Connection 链接实例
 	 */
-	public static function connect(array $config = [], $reset = false)
+	public static function connect($config = [], $reset = false)
 	{
 		if (empty($config)) {
-			$config = self::getConfig();
+			// 未定义配置信息，获取默认配置信息
+			$config = self::getConfig(self::DEFAULT_KEY);
+		} elseif (is_string($config)) {
+			// 非空字符串，即指定配置节点，获取对应配置
+			$config = self::getConfig($config);
 		}
 
 		// 获取链接池key值
 		$key = self::getKey($config);
-
 		// 重连或者不存在链接
 		if ($reset === true || !isset(self::$pool[$key])) {
 			self::$pool[$key] = new Connection($config);
@@ -137,7 +147,7 @@ class Db
 			return self::$config;
 		}
 
-		return isset(self::$config[$name]) ? self::$config[$name] : null;
+		return isset(self::$config[$name]) ? self::$config[$name] : [];
 	}
 
 	/**
@@ -159,7 +169,7 @@ class Db
 	 * @param mixed $event 事件名
 	 * @param Connection $connection 链接实例
 	 * @param mixed &$params 参数
-	 * @throws MondbException
+	 * @throws DbException
 	 * @return array
 	 */
 	public static function trigger($event, Connection $connection, $params = [])
@@ -173,7 +183,7 @@ class Db
 				} elseif ($callback instanceof Closure) {
 					$class = $callback;
 				} else {
-					throw new MondbException('Event callback faild!', MondbException::EVENT_CALLBACK_FAILD);
+					throw new DbException('Event callback faild!', DbException::EVENT_CALLBACK_FAILD);
 				}
 
 				$result[$k] = Container::instance()->invoke($class, [$connection, $params]);

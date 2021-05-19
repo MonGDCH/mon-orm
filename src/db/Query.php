@@ -13,7 +13,7 @@ use mon\orm\db\Builder;
 use mon\orm\model\Data;
 use mon\orm\db\Connection;
 use mon\orm\model\DataCollection;
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * 查询构造器
@@ -380,7 +380,7 @@ class Query
      * 更新查询
      *
      * @param  array  $data 更新的数据
-     * @throws MondbException
+     * @throws DbException
      * @return integer  影响行数
      */
     public function update(array $data = [])
@@ -388,9 +388,9 @@ class Query
         $options = $this->parseExpress();
         if (empty($options['where'])) {
             // 更新操作，查询条件不能为空
-            throw new MondbException(
+            throw new DbException(
                 "The update operation query condition cannot be empty!",
-                MondbException::WHERE_IS_NULL
+                DbException::WHERE_IS_NULL
             );
         }
         $data = array_merge($options['data'], $data);
@@ -398,9 +398,9 @@ class Query
         $sql = $this->builder->update($data, $options);
         // $data未空，生成空sql语句
         if ($sql == '') {
-            throw new MondbException(
+            throw new DbException(
                 "The generated query statement is empty!",
-                MondbException::SQL_IS_NULL
+                DbException::SQL_IS_NULL
             );
         }
         // 获取绑定值
@@ -509,7 +509,7 @@ class Query
     /**
      * 操作操作
      *
-     * @throws MondbException
+     * @throws DbException
      * @return integer  影响行数
      */
     public function delete()
@@ -517,9 +517,9 @@ class Query
         $options = $this->parseExpress();
         if (empty($options['where'])) {
             // 操作操作，查询条件不能为空
-            throw new MondbException(
+            throw new DbException(
                 "The delete operation query condition cannot be empty!",
-                MondbException::WHERE_IS_NULL
+                DbException::WHERE_IS_NULL
             );
         }
         // 生成删除SQL语句
@@ -1390,7 +1390,7 @@ class Query
     /**
      * 分析表达式（可用于查询或者写入操作）
      *
-     * @throws MondbException
+     * @throws DbException
      * @return array
      */
     public function parseExpress()
@@ -1398,9 +1398,9 @@ class Query
         $options = $this->options;
 
         if (empty($options['table'])) {
-            throw new MondbException(
+            throw new DbException(
                 'The query table is not set!',
-                MondbException::TABLE_NULL_FOUND
+                DbException::TABLE_NULL_FOUND
             );
         }
 
@@ -1438,21 +1438,21 @@ class Query
      * @param  array $data     操作数据
      * @param  array $where    where条件，存在则为更新，反之新增
      * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @throws MondbException
+     * @throws DbException
      * @return mixed 结果集
      */
     public function save($data, $where = null, $sequence = null)
     {
         if (!$this->getModel()) {
-            throw new MondbException(
+            throw new DbException(
                 'The instance is not bound to the Model!',
-                MondbException::QUERY_MODEL_NOT_BIND
+                DbException::QUERY_MODEL_NOT_BIND
             );
         }
         if (!method_exists($this->getModel(), 'save')) {
-            throw new MondbException(
+            throw new DbException(
                 'The model not support autocomplete of save!',
-                MondbException::MODEL_NOT_SUPPORT_SAVE
+                DbException::MODEL_NOT_SUPPORT_SAVE
             );
         }
 
@@ -1463,21 +1463,21 @@ class Query
      * 模型类get方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
-     * @throws MondbException
+     * @throws DbException
      * @return Data 结果集
      */
     public function get($where = [])
     {
         if (!$this->getModel()) {
-            throw new MondbException(
+            throw new DbException(
                 'The instance is not bound to the Model!',
-                MondbException::QUERY_MODEL_NOT_BIND
+                DbException::QUERY_MODEL_NOT_BIND
             );
         }
         if (!method_exists($this->getModel(), 'get')) {
-            throw new MondbException(
+            throw new DbException(
                 'The model not support autocomplete of get!',
-                MondbException::MODEL_NOT_SUPPORT_GET
+                DbException::MODEL_NOT_SUPPORT_GET
             );
         }
 
@@ -1488,21 +1488,21 @@ class Query
      * 模型类all方法支持
      *
      * @param  array $where    where条件，存在则为更新，反之新增
-     * @throws MondbException
+     * @throws DbException
      * @return DataCollection 结果集
      */
     public function all($where = [])
     {
         if (!$this->getModel()) {
-            throw new MondbException(
+            throw new DbException(
                 'The instance is not bound to the Model!',
-                MondbException::QUERY_MODEL_NOT_BIND
+                DbException::QUERY_MODEL_NOT_BIND
             );
         }
         if (!method_exists($this->getModel(), 'all')) {
-            throw new MondbException(
+            throw new DbException(
                 'The model not support autocomplete of all!',
-                MondbException::MODEL_NOT_SUPPORT_ALL
+                DbException::MODEL_NOT_SUPPORT_ALL
             );
         }
 

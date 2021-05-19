@@ -9,7 +9,7 @@ use mon\util\Validate;
 use mon\util\Container;
 use mon\orm\model\Data;
 use mon\orm\model\DataCollection;
-use mon\orm\exception\MondbException;
+use mon\orm\exception\DbException;
 
 /**
  * 模型基类
@@ -53,6 +53,13 @@ abstract class Model
      * @var string
      */
     protected $table;
+
+    /**
+     * 链接配置节点
+     *
+     * @var string
+     */
+    protected $connection;
 
     /**
      * DB配置
@@ -190,11 +197,9 @@ abstract class Model
      */
     public function db($newLink = false)
     {
-        if (empty($this->config)) {
-            $this->config = Db::getConfig();
-        }
+        $config = !empty($this->config) ?  $this->config : $this->connection;
         // 获取DB实例
-        $connect =  Db::connect($this->config, $newLink)->model($this);
+        $connect =  Db::connect($config, $newLink)->model($this);
         if (!empty($this->table)) {
             $connect = $connect->table($this->table);
         }
@@ -221,9 +226,9 @@ abstract class Model
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], (array) $args);
         }
-        throw new MondbException(
+        throw new DbException(
             'The scope is not found [' . $method . ']',
-            MondbException::SCOPE_NULL_FOUND
+            DbException::SCOPE_NULL_FOUND
         );
     }
 
