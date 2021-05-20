@@ -218,7 +218,6 @@ abstract class Model
     {
         // 固定第一个参数为Db实例
         array_unshift($args, $this->db());
-
         if ($name instanceof Closure) {
             return call_user_func_array($name, (array) $args);
         }

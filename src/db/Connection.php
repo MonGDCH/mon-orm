@@ -289,6 +289,8 @@ class Connection
             throw new DbException(
                 'Link Error: ' . $e->getMessage(),
                 DbException::LINK_FAILURE,
+                $this->getConfig(),
+                $this->getLastSql(),
                 $e
             );
         }
@@ -314,7 +316,7 @@ class Connection
      * @param  string  $sql  SQL语句
      * @param  array   $bind 绑定的值
      * @param  boolean $pdo  是否返回PDO对象
-     * @throws PDOException
+     * @throws DbException
      * @throws Throwable
      * @throws Exception
      * @return mixed   查询结果集
@@ -357,14 +359,14 @@ class Connection
                 return $this->close()->query($sql, $bind, $pdo);
             }
 
-            throw $e;
-        } catch (Throwable $e) {
+            throw new DbException($e->getMessage(), $e->getCode(), $this->getConfig(), $this->getLastsql(), $e);
+        } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $pdo);
             }
 
             throw $e;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $pdo);
             }
@@ -378,7 +380,7 @@ class Connection
      *
      * @param  string $sql  SQL语句
      * @param  array  $bind 绑定的值
-     * @throws PDOException
+     * @throws DbException
      * @throws Throwable
      * @throws Exception
      * @return integer 影响行数
@@ -422,14 +424,15 @@ class Connection
                 return $this->close()->execute($sql, $bind);
             }
 
-            throw $e;
-        } catch (Throwable $e) {
+            // throw $e;
+            throw new DbException($e->getMessage(), $e->getCode(), $this->getConfig(), $this->getLastsql(), $e);
+        } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind);
             }
 
             throw $e;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind);
             }
@@ -452,7 +455,7 @@ class Connection
             if ($this->transLevel == 1) {
                 $this->getLink()->beginTransaction();
                 // 触发开启事务事件
-                Db::trigger('startTrans', $this, $this->config);
+                Db::trigger('startTrans', $this, $this->getConfig());
             } elseif ($this->transLevel > 1) {
                 $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
             }
@@ -476,7 +479,7 @@ class Connection
         if ($this->transLevel == 1) {
             $this->getLink()->commit();
             // 触发提交事务事件
-            Db::trigger('commitTrans', $this, $this->config);
+            Db::trigger('commitTrans', $this, $this->getConfig());
         }
         --$this->transLevel;
     }
@@ -492,7 +495,7 @@ class Connection
             $this->transLevel = 0;
             $this->getLink()->rollBack();
             // 触发回滚事务事件
-            Db::trigger('rollbackTrans', $this, $this->config);
+            Db::trigger('rollbackTrans', $this, $this->getConfig());
         } elseif ($this->transLevel > 1) {
             $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
         }
@@ -509,7 +512,7 @@ class Connection
     {
         $this->getLink()->exec("XA START '$xid'");
         // 触发开启跨库事件
-        Db::trigger('startTransXA', $this, $this->config);
+        Db::trigger('startTransXA', $this, $this->getConfig());
     }
 
     /**
@@ -523,7 +526,7 @@ class Connection
         $this->getLink()->exec("XA END '$xid'");
         $this->getLink()->exec("XA PREPARE '$xid'");
         // 触发预编译XA事务事件
-        Db::trigger('prepareTransXA', $this, $this->config);
+        Db::trigger('prepareTransXA', $this, $this->getConfig());
     }
 
     /**
@@ -536,7 +539,7 @@ class Connection
     {
         $this->getLink()->exec("XA COMMIT '$xid'");
         // 触发提交跨库事务事件
-        Db::trigger('commitTransXA', $this, $this->config);
+        Db::trigger('commitTransXA', $this, $this->getConfig());
     }
 
     /**
@@ -549,7 +552,7 @@ class Connection
     {
         $this->getLink()->exec("XA ROLLBACK '$xid'");
         // 触发回滚跨库事务事件
-        Db::trigger('rollbackTransXA', $this, $this->config);
+        Db::trigger('rollbackTransXA', $this, $this->getConfig());
     }
 
     /**
@@ -706,7 +709,9 @@ class Connection
             if (!$result) {
                 throw new DbException(
                     "Bind value error: {$param}",
-                    DbException::BIND_VALUE_ERROR
+                    DbException::BIND_VALUE_ERROR,
+                    $this->getConfig(),
+                    $this->getLastSql()
                 );
             }
         }
@@ -733,7 +738,9 @@ class Connection
                 $param = array_shift($val);
                 throw new DbException(
                     "Bind param error: {$param}",
-                    DbException::BIND_VALUE_ERROR
+                    DbException::BIND_VALUE_ERROR,
+                    $this->getConfig(),
+                    $this->getLastSql()
                 );
             }
         }

@@ -13,6 +13,11 @@ use Exception;
 class DbException extends Exception
 {
 	/**
+	 * 默认错误码
+	 */
+	const ERROR = 10000;
+
+	/**
 	 * 解析where条件失败
 	 */
 	const PARSE_WHERE_ERROR = 10100;
@@ -91,4 +96,76 @@ class DbException extends Exception
 	 * 事件回调异常
 	 */
 	const EVENT_CALLBACK_FAILD = 10900;
+
+	/**
+	 * 错误的SQL
+	 *
+	 * @var string
+	 */
+	protected $sql = '';
+
+	/**
+	 * 配置信息
+	 *
+	 * @var array
+	 */
+	protected $config = [];
+
+	/**
+	 * 构造方法
+	 *
+	 * @param string $message
+	 * @param integer $code
+	 * @param array $config
+	 * @param string $sql
+	 * @param mixed $previous
+	 */
+	public function __construct($message, $code = self::ERROR, $config = [], $sql = '', $previous = null)
+	{
+		$this->setSql($sql);
+		$this->setConfig($config);
+		parent::__construct($message, $code, $previous);
+	}
+
+	/**
+	 * 设置错误的SQL
+	 *
+	 * @param string $sql
+	 * @return void
+	 */
+	public function setSql($sql)
+	{
+		$this->sql = $sql;
+	}
+
+	/**
+	 * 获取SQL
+	 *
+	 * @return string
+	 */
+	public function getSql()
+	{
+		return $this->sql;
+	}
+
+	/**
+	 * 设置配置信息
+	 *
+	 * @param array $config
+	 * @return void
+	 */
+	public function setConfig($config)
+	{
+		$this->config = $config;
+	}
+
+	/**
+	 * 获取配置信息
+	 *
+	 * @return array
+	 */
+	public function getConfig()
+	{
+		return $this->config;
+	}
 }
