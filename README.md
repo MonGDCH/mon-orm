@@ -202,6 +202,12 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.4.2
+
+* 优化异常处理，修改MonDbException为DbException
+* 优化模型对跨库配置的支持
+* 优化配置文件，采用二级数组配置，默认使用default节点的配置信息
+
 ### 2.4.1
 
 * 优化代码

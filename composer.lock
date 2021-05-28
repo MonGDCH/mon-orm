@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "481fd648f967575c74ff2b491fd5d224",
+    "content-hash": "3e834cb34de680fa519351e6782fedd7",
     "packages": [
         {
             "name": "mongdch/mon-util",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MonGDCH/mon-util.git",
-                "reference": "1de8c9a6c935b1b37823eda6c40585487c54aafe"
+                "reference": "8495104332a7d4d73b2fc21bb1ad51bb3314e3cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/1de8c9a6c935b1b37823eda6c40585487c54aafe",
-                "reference": "1de8c9a6c935b1b37823eda6c40585487c54aafe",
+                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/8495104332a7d4d73b2fc21bb1ad51bb3314e3cb",
+                "reference": "8495104332a7d4d73b2fc21bb1ad51bb3314e3cb",
                 "shasum": ""
             },
             "require": {
@@ -60,9 +60,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MonGDCH/mon-util/issues",
-                "source": "https://github.com/MonGDCH/mon-util/tree/1.3.1"
+                "source": "https://github.com/MonGDCH/mon-util/tree/1.3.2"
             },
-            "time": "2021-03-18T10:13:40+00:00"
+            "time": "2021-04-26T14:17:10+00:00"
         }
     ],
     "packages-dev": [],

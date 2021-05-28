@@ -86,23 +86,23 @@ class Connection
      */
     protected $config = [
         // 数据库类型
-        'type'                          => 'mysql',
+        'type'              => 'mysql',
         // 服务器地址
-        'host'                          => '127.0.0.1',
+        'host'              => '127.0.0.1',
         // 数据库名
-        'database'                      => '',
+        'database'          => '',
         // 用户名
-        'username'                      => '',
+        'username'          => '',
         // 密码
-        'password'                      => '',
+        'password'          => '',
         // 端口
-        'port'                          => '3306',
+        'port'              => '3306',
         // 数据库编码默认采用utf8
-        'charset'                       => 'utf8',
+        'charset'           => 'utf8',
         // 返回结果集类型
-        'result_type'                   => PDO::FETCH_ASSOC,
+        'result_type'       => PDO::FETCH_ASSOC,
         // 断线是否重连，注意：强制重连有可能导致数据库core掉
-        'break_reconnect'               => false,
+        'break_reconnect'   => false,
     ];
 
     /**
