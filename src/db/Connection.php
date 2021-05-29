@@ -289,8 +289,7 @@ class Connection
             throw new DbException(
                 'Link Error: ' . $e->getMessage(),
                 DbException::LINK_FAILURE,
-                $this->getConfig(),
-                $this->getLastSql(),
+                $this,
                 $e
             );
         }
@@ -359,7 +358,7 @@ class Connection
                 return $this->close()->query($sql, $bind, $pdo);
             }
 
-            throw new DbException($e->getMessage(), $e->getCode(), $this->getConfig(), $this->getLastsql(), $e);
+            throw new DbException('PDO Error: ' . $e->getMessage(), $e->getCode(), $this, $e);
         } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $pdo);
@@ -424,8 +423,7 @@ class Connection
                 return $this->close()->execute($sql, $bind);
             }
 
-            // throw $e;
-            throw new DbException($e->getMessage(), $e->getCode(), $this->getConfig(), $this->getLastsql(), $e);
+            throw new DbException('PDO Error: ' . $e->getMessage(), $e->getCode(), $this, $e);
         } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind);
@@ -710,8 +708,7 @@ class Connection
                 throw new DbException(
                     "Bind value error: {$param}",
                     DbException::BIND_VALUE_ERROR,
-                    $this->getConfig(),
-                    $this->getLastSql()
+                    $this
                 );
             }
         }
@@ -739,8 +736,7 @@ class Connection
                 throw new DbException(
                     "Bind param error: {$param}",
                     DbException::BIND_VALUE_ERROR,
-                    $this->getConfig(),
-                    $this->getLastSql()
+                    $this
                 );
             }
         }

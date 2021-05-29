@@ -42,11 +42,13 @@ Db::connect($config)->table('test')->select();
 ```
 use mon\orm\Db;
 $config = [
-	'host'     => '127.0.0.1',
-	'database' => 'test',
-	'username' => 'root',
-	'password' => 'root',
-	'port'     => '3306',
+	'default' => [
+		'host'     => '127.0.0.1',
+		'database' => 'test',
+		'username' => 'root',
+		'password' => 'root',
+		'port'     => '3306',
+	]
 ];
 // 全局设置默认配置信息
 Db::setConfig($config);
@@ -201,6 +203,10 @@ $data = $test->scope('test')->where('id', 20)->all();
 ---
 
 # 版本
+
+### 2.4.3
+
+* 优化异常处理信息，绑定链接实例
 
 ### 2.4.2
 

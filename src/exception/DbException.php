@@ -3,6 +3,7 @@
 namespace mon\orm\exception;
 
 use Exception;
+use mon\orm\db\Connection;
 
 /**
  * MonDb自定义异常
@@ -98,74 +99,33 @@ class DbException extends Exception
 	const EVENT_CALLBACK_FAILD = 10900;
 
 	/**
-	 * 错误的SQL
+	 * 链接实例
 	 *
-	 * @var string
+	 * @var Connection
 	 */
-	protected $sql = '';
-
-	/**
-	 * 配置信息
-	 *
-	 * @var array
-	 */
-	protected $config = [];
+	protected $connection;
 
 	/**
 	 * 构造方法
 	 *
 	 * @param string $message
 	 * @param integer $code
-	 * @param array $config
-	 * @param string $sql
+	 * @param Connection $connection
 	 * @param mixed $previous
 	 */
-	public function __construct($message, $code = self::ERROR, $config = [], $sql = '', $previous = null)
+	public function __construct($message, $code = self::ERROR, $connection = null, $previous = null)
 	{
-		$this->setSql($sql);
-		$this->setConfig($config);
 		parent::__construct($message, $code, $previous);
-	}
-
-	/**
-	 * 设置错误的SQL
-	 *
-	 * @param string $sql
-	 * @return void
-	 */
-	public function setSql($sql)
-	{
-		$this->sql = $sql;
+		$this->connection = $connection;
 	}
 
 	/**
 	 * 获取SQL
 	 *
-	 * @return string
+	 * @return Connection
 	 */
-	public function getSql()
+	public function getConnection()
 	{
-		return $this->sql;
-	}
-
-	/**
-	 * 设置配置信息
-	 *
-	 * @param array $config
-	 * @return void
-	 */
-	public function setConfig($config)
-	{
-		$this->config = $config;
-	}
-
-	/**
-	 * 获取配置信息
-	 *
-	 * @return array
-	 */
-	public function getConfig()
-	{
-		return $this->config;
+		return $this->connection;
 	}
 }
