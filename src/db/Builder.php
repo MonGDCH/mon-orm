@@ -200,7 +200,7 @@ class Builder
             $values[] = '( ' . implode(',', $value) . ' )';
 
             if (!isset($insertFields)) {
-                $insertFields = array_keys($data);
+                $insertFields = $this->quoteField(array_keys($data));
             }
         }
 
@@ -839,5 +839,22 @@ class Builder
         }
 
         return ' ON DUPLICATE KEY UPDATE ' . implode(' , ', $updates) . ' ';
+    }
+
+    /**
+     * insertAll转义字段名
+     *
+     * @param array $fields
+     * @return array
+     */
+    protected function quoteField($fields)
+    {
+        foreach ($fields as &$field) {
+            if (!preg_match('/[,\'\"\*\(\)`.\s]/', $field)) {
+                $field = '`' . $field . '`';
+            }
+        }
+
+        return $fields;
     }
 }

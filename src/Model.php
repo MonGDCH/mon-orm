@@ -246,13 +246,14 @@ abstract class Model
     /**
      * 保存数据
      *
-     * @param  array $data     操作数据
-     * @param  mixed $where    where条件，存在则为更新，反之新增
-     * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @param  mixed $query    查询对象实例
+     * @param  array   $data     操作数据
+     * @param  mixed   $where    where条件，存在则为更新，反之新增
+     * @param  mixed   $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @param  boolean $replace  insert操作时，是否使用replace
+     * @param  mixed   $query    查询对象实例
      * @return mixed
      */
-    public function save(array $data, $where = null, $sequence = null, $query = null)
+    public function save(array $data, $where = null, $sequence = null, $replace = false, $query = null)
     {
         // 过滤允许操作的字段
         if (!empty($this->allow)) {
@@ -267,7 +268,40 @@ abstract class Model
             $this->allow = [];
         }
 
-        return !is_null($where) ? $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $query);
+        return !is_null($where) ? $this->updateData($data, $where, $query) : $this->insertData($data, $sequence, $replace, $query);
+    }
+
+    /**
+     * 批量写入数据
+     *
+     * @param array   $data     操作数据
+     * @param boolean $replace  是否replace
+     * @param mixed   $query    查询对象实例
+     * @return integer 影响行数
+     */
+    public function saveAll(array $data, $replace = false, $query = null)
+    {
+        foreach ($data as $k => $item) {
+            // 过滤允许操作的字段
+            if (!empty($this->allow)) {
+                $allowData = [];
+                foreach ($this->allow as $field) {
+                    if (isset($item[$field])) {
+                        $allowData[$field] = $item[$field];
+                    }
+                }
+                // 重置操作数据
+                $item = $allowData;
+            }
+            $data[$k] = $this->autoCompleteData($this->insert, $item);
+        }
+        $this->allow = [];
+        // 获取DB链接
+        if (!$query) {
+            $query = $this->db();
+        }
+
+        return $query->insertAll($data, $replace);
     }
 
     /**
@@ -340,12 +374,13 @@ abstract class Model
     /**
      * 新增数据
      *
-     * @param  array $data 操作数据
-     * @param  mixed $sequence 自增序列名
-     * @param  mixed $sequence 查询对象实例
+     * @param  array   $data     操作数据
+     * @param  mixed   $sequence 自增序列名
+     * @param  boolean $replace  是否进行replace操作
+     * @param  mixed   $sequence 查询对象实例
      * @return mixed
      */
-    protected function insertData($data, $sequence, $db = null)
+    protected function insertData($data, $sequence, $replace = false, $db = null)
     {
         // 自动完成
         $insertData = $this->autoCompleteData($this->insert, $data);
@@ -355,7 +390,7 @@ abstract class Model
         }
 
         $getLastInsID = $sequence ? true : false;
-        return $db->insert($insertData, false, $getLastInsID, $sequence);
+        return $db->insert($insertData, $replace, $getLastInsID, $sequence);
     }
 
     /**
@@ -401,7 +436,7 @@ abstract class Model
      * @see v2.0.3 修复未定义自动处理的字段也自动处理的BUG
      * @param  array  $auto 自动补全的字段
      * @param  array  $data 数据数据源
-     * @return mixed
+     * @return array
      */
     protected function autoCompleteData($auto = [], $data = [])
     {

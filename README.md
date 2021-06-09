@@ -182,6 +182,9 @@ $test->save(['name' => mt_rand(1, 100)]);
 // 新增返回自增ID
 $test->save(['name' => 'get insert id'], null, 'id');
 
+// 批量新增
+$test->saveAll([['a' => 1], ['a' => 2]]);
+
 // 修改
 $test->save(['name' => 'hello complete'], ['id' => 45]);
 
@@ -203,6 +206,10 @@ $data = $test->scope('test')->where('id', 20)->all();
 ---
 
 # 版本
+
+### 2.4.4
+
+* 优化insertAll的sql构建，模型增加saveAll方法，支持自动完成。
 
 ### 2.4.3
 

@@ -9,12 +9,14 @@ class Test extends Model
 {
 	/**
 	 * 操作表
+	 *
 	 * @var string
 	 */
 	public $table = 'test';
 
 	/**
 	 * db配置
+	 *
 	 * @var [type]
 	 */
 	public $config = [
@@ -32,6 +34,7 @@ class Test extends Model
 
 	/**
 	 * 新增自动写入字段
+	 *
 	 * @var [type]
 	 */
 	protected $insert = [
@@ -42,6 +45,7 @@ class Test extends Model
 
 	/**
 	 * 更新自动写入字段
+	 *
 	 * @var [type]
 	 */
 	protected $update = [
@@ -50,6 +54,7 @@ class Test extends Model
 
 	/**
 	 * 自动补全查询数据
+	 *
 	 * @var array
 	 */
 	protected $append = [
@@ -82,9 +87,9 @@ class Test extends Model
 	/**
 	 * 自动完成格式化获取create_time结果
 	 *
-	 * @param  [type] $val [description]
+	 * @param  mixed $val [description]
 	 * @param  array  $row [description]
-	 * @return [type]      [description]
+	 * @return mixed      [description]
 	 */
 	protected function getCreateTimeAttr($val, $row)
 	{
@@ -93,9 +98,9 @@ class Test extends Model
 
 	/**
 	 * 自动完成格式化append中count字段的数据
-	 * @param  [type] $val [description]
-	 * @param  [type] $row [description]
-	 * @return [type]      [description]
+	 * @param  mixed $val [description]
+	 * @param  array $row [description]
+	 * @return mixed      [description]
 	 */
 	protected function getcountAttr($val, $row)
 	{

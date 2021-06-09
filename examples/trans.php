@@ -5,12 +5,20 @@ require __DIR__ . '/../vendor/autoload.php';
 use mon\orm\Db;
 
 $config = [
-	'host'	   => '127.0.0.1',
-	'database' => 'test',
-	'username' => 'root',
-	'password' => 'root',
-	'prot'	   => 3306
+	'default' => [
+		// 服务器地址
+		'host'        	  => '127.0.0.1',
+		// 数据库名
+		'database'        => 'test',
+		// 用户名
+		'username'        => 'root',
+		// 密码
+		'password'        => 'test',
+		// 端口
+		'port'        	  => '3306',
+	]
 ];
+
 
 Db::setConfig($config);
 

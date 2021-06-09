@@ -9,16 +9,18 @@ use mon\util\Instance;
 date_default_timezone_set('PRC');
 
 $config = [
-	// 服务器地址
-	'host'        	  => '127.0.0.1',
-	// 数据库名
-	'database'        => 'test',
-	// 用户名
-	'username'        => 'root',
-	// 密码
-	'password'        => 'root',
-	// 端口
-	'port'        	  => '3306',
+	'default' => [
+		// 服务器地址
+		'host'        	  => '127.0.0.1',
+		// 数据库名
+		'database'        => 'test',
+		// 用户名
+		'username'        => 'root',
+		// 密码
+		'password'        => 'test',
+		// 端口
+		'port'        	  => '3306',
+	]
 ];
 
 Db::setConfig($config);
@@ -27,7 +29,24 @@ class Test extends Model
 {
 	use Instance;
 
-	protected $table = 'chat_app';
+	protected $table = 'addons_ads';
+
+	protected $insert = ['data', 'create_time', 'update_time'];
+
+	protected function setDataAttr()
+	{
+		return 'test';
+	}
+
+	protected function setUpdateTimeAttr()
+	{
+		return '1111';
+	}
+
+	protected function setCreateTimeAttr()
+	{
+		return '12345';
+	}
 
 	/**
 	 * 查询场景传参
@@ -67,9 +86,25 @@ $map = [
 
 // $data = Test::instance()->alias('b')->join(new Raw('(select * from we_user) AS a'), 'a.uid = b.id')->debug()->select();
 
-$data = Test::instance()->scope('args')->find();
-debug($data);
+// $data = Test::instance()->scope('args')->find();
+// debug($data);
 
 
 // $raw = new Raw('aaaaa');
 // echo $raw;
+
+$data = Test::instance()->allowField(['pos_id', 'title', 'url', 'remark'])->saveAll([
+	[
+		'pos_id' => 1,
+		'title' => 'test',
+		'url' => '1111',
+	],
+	[
+		'pos_id' => 2,
+		'title' => 'test11',
+		'url' => '111122',
+		'aaaa' => '234',
+	]
+]);
+
+debug($data);
