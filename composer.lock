@@ -4,21 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e834cb34de680fa519351e6782fedd7",
+    "content-hash": "f527c32858b43c38a718135be4eccb36",
     "packages": [
         {
             "name": "mongdch/mon-util",
-            "version": "1.3.2",
+            "version": "1.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MonGDCH/mon-util.git",
-                "reference": "8495104332a7d4d73b2fc21bb1ad51bb3314e3cb"
+                "reference": "e8c871154f736c659ade91bfa5d2c402cb860ecf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/8495104332a7d4d73b2fc21bb1ad51bb3314e3cb",
-                "reference": "8495104332a7d4d73b2fc21bb1ad51bb3314e3cb",
-                "shasum": ""
+                "url": "https://api.github.com/repos/MonGDCH/mon-util/zipball/e8c871154f736c659ade91bfa5d2c402cb860ecf",
+                "reference": "e8c871154f736c659ade91bfa5d2c402cb860ecf",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
             },
             "require": {
                 "php": ">=5.6.0"
@@ -60,9 +66,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MonGDCH/mon-util/issues",
-                "source": "https://github.com/MonGDCH/mon-util/tree/1.3.2"
+                "source": "https://github.com/MonGDCH/mon-util/tree/1.3.3"
             },
-            "time": "2021-04-26T14:17:10+00:00"
+            "time": "2021-07-26T06:00:07+00:00"
         }
     ],
     "packages-dev": [],

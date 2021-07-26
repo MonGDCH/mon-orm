@@ -207,6 +207,11 @@ $data = $test->scope('test')->where('id', 20)->all();
 
 # 版本
 
+### 2.4.5
+
+* 修复PDOException在部分mysql版本中获取的异常code为字符串，导致DbException异常的BUG
+* 优化Query类model实例绑定
+
 ### 2.4.4
 
 * 优化insertAll的sql构建，模型增加saveAll方法，支持自动完成。

@@ -358,7 +358,7 @@ class Connection
                 return $this->close()->query($sql, $bind, $pdo);
             }
 
-            throw new DbException('PDO Error: ' . $e->getMessage(), $e->getCode(), $this, $e);
+            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
         } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->query($sql, $bind, $pdo);
@@ -423,7 +423,7 @@ class Connection
                 return $this->close()->execute($sql, $bind);
             }
 
-            throw new DbException('PDO Error: ' . $e->getMessage(), $e->getCode(), $this, $e);
+            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
         } catch (Exception $e) {
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind);

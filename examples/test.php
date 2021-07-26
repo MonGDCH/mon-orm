@@ -3,6 +3,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Db;
 use mon\orm\db\Raw;
+use mon\orm\exception\DbException;
 use mon\orm\Model;
 use mon\util\Instance;
 
@@ -17,7 +18,7 @@ $config = [
 		// 用户名
 		'username'        => 'root',
 		// 密码
-		'password'        => 'test',
+		'password'        => 'root',
 		// 端口
 		'port'        	  => '3306',
 	]
@@ -29,7 +30,7 @@ class Test extends Model
 {
 	use Instance;
 
-	protected $table = 'addons_ads';
+	protected $table = 'addons_backlist';
 
 	protected $insert = ['data', 'create_time', 'update_time'];
 
@@ -63,8 +64,7 @@ class Test extends Model
 
 	public function demo()
 	{
-		$check = $this->validate();
-		debug($check);
+		$this->save(['ips' => 11]);
 	}
 }
 
@@ -93,18 +93,23 @@ $map = [
 // $raw = new Raw('aaaaa');
 // echo $raw;
 
-$data = Test::instance()->allowField(['pos_id', 'title', 'url', 'remark'])->saveAll([
-	[
-		'pos_id' => 1,
-		'title' => 'test',
-		'url' => '1111',
-	],
-	[
-		'pos_id' => 2,
-		'title' => 'test11',
-		'url' => '111122',
-		'aaaa' => '234',
-	]
-]);
+// $data = Test::instance()->allowField(['pos_id', 'title', 'url', 'remark'])->saveAll([
+// 	[
+// 		'pos_id' => 1,
+// 		'title' => 'test',
+// 		'url' => '1111',
+// 	],
+// 	[
+// 		'pos_id' => 2,
+// 		'title' => 'test11',
+// 		'url' => '111122',
+// 		'aaaa' => '234',
+// 	]
+// ]);
 
-debug($data);
+try {
+	$data = Test::instance()->demo();
+	debug($data);
+} catch (DbException $e) {
+	var_dump($e->getMessage());
+}

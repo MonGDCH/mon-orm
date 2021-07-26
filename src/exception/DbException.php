@@ -99,6 +99,11 @@ class DbException extends Exception
 	const EVENT_CALLBACK_FAILD = 10900;
 
 	/**
+	 * PDO异常，因为pdo返回的code有可能是字符串，所以这里统一使用一个错误码，可通过获取异常实例的 getPrevious() 方法获取PDO异常实例，再进行获取code
+	 */
+	const PDO_EXCEPTION = 40000;
+
+	/**
 	 * 链接实例
 	 *
 	 * @var Connection
@@ -111,7 +116,7 @@ class DbException extends Exception
 	 * @param string $message
 	 * @param integer $code
 	 * @param Connection $connection
-	 * @param mixed $previous
+	 * @param Exception $previous
 	 */
 	public function __construct($message, $code = self::ERROR, $connection = null, $previous = null)
 	{

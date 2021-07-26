@@ -1438,10 +1438,11 @@ class Query
      * @param  array $data     操作数据
      * @param  array $where    where条件，存在则为更新，反之新增
      * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @param  boolean $replace replace操作
      * @throws DbException
      * @return mixed 结果集
      */
-    public function save($data, $where = null, $sequence = null)
+    public function save($data, $where = null, $sequence = null, $replace = false)
     {
         if (!$this->getModel()) {
             throw new DbException(
@@ -1456,7 +1457,7 @@ class Query
             );
         }
 
-        return call_user_func_array([$this->getModel(), 'save'], [$data, $where, $sequence, $this]);
+        return call_user_func_array([$this->getModel(), 'save'], [$data, $where, $sequence, $replace, $this]);
     }
 
     /**
