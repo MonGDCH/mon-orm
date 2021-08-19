@@ -101,8 +101,6 @@ class Connection
         'charset'           => 'utf8',
         // 返回结果集类型
         'result_type'       => PDO::FETCH_ASSOC,
-        // 断线是否重连，注意：强制重连有可能导致数据库core掉
-        'break_reconnect'   => false,
     ];
 
     /**
@@ -805,14 +803,15 @@ class Connection
     }
 
     /**
-     * 是否断线
+     * 断线是否重连
      *
+     * @see 注意：强制重连有可能导致数据库core掉
      * @param  PDOException|Exception  $e 异常对象
      * @return boolean
      */
     protected function isBreak($e)
     {
-        if (!$this->config['break_reconnect']) {
+        if (!Db::reconnect()) {
             return false;
         }
 

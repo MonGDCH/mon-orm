@@ -98,6 +98,13 @@ class Db
 	private static $config = [];
 
 	/**
+	 * 断开连接是否重连，注意：强制重连有可能导致数据库core掉
+	 *
+	 * @var boolean
+	 */
+	private static $break_reconnect = false;
+
+	/**
 	 * 链接Db
 	 *
 	 * @param  string|array   $config DB链接配置
@@ -148,6 +155,20 @@ class Db
 		}
 
 		return isset(self::$config[$name]) ? self::$config[$name] : [];
+	}
+
+	/**
+	 * 定义或获取数据库断开是否重连
+	 *
+	 * @param boolean $reconnect
+	 * @return boolean
+	 */
+	public static function reconnect($reconnect = null)
+	{
+		if (!is_null($reconnect)) {
+			self::$break_reconnect = boolval($reconnect);
+		}
+		return self::$break_reconnect;
 	}
 
 	/**

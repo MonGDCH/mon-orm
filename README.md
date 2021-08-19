@@ -6,7 +6,7 @@
 * 事务支持
 * 模型支持查询场景、数据自动完成(设置器，获取器)
 * 自动参数绑定
-* 支持断点重连
+* 支持断线重连
 * 支持查询事件监听
 
 ## 安装
@@ -32,7 +32,6 @@ $config = [
 	'username' => 'root',
 	'password' => 'root',
 	'port'     => '3306',
-	'break_reconnect' => false
 ];
 
 // 通过connect方法连接DB操作DB
@@ -201,11 +200,23 @@ $test->all(['status' => 1]);
 $data = $test->scope('test')->where('id', 20)->all();
 ```
 
+
+定义断线重连,默认断线不重连
+
+```
+Db::reconnect(true);
+
+```
+
 ##### 更多使用方式请查看examples
 
 ---
 
 # 版本
+
+### 2.4.6
+
+* 优化断线重连机制，通过`Db::reconnect(true)`进行全局设置
 
 ### 2.4.5
 
