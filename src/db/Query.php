@@ -106,7 +106,7 @@ class Query
      */
     public function getOptions($name = '')
     {
-        if ('' === $name) {
+        if ($name === '') {
             return $this->options;
         } else {
             return isset($this->options[$name]) ? $this->options[$name] : null;
@@ -131,7 +131,7 @@ class Query
      *
      * @param string $sql  sql指令
      * @param array  $bind 参数绑定
-     * @return mixed 数据集影响行数
+     * @return integer 数据集影响行数
      */
     public function execute($sql, $bind = [])
     {

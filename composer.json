@@ -1,7 +1,7 @@
 {
     "name": "mongdch/mon-orm",
     "description": "Mysql database ORM for PHP",
-    "version": "v2.4.6",
+    "version": "v2.4.7",
     "keywords": [
         "mysql",
         "orm",

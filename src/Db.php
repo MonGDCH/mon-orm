@@ -22,19 +22,19 @@ use mon\orm\exception\DbException;
  * @method static \mon\orm\db\Query alias(string $alias) 指定表别名
  * @method static \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
  * @method static \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
- * @method static \mon\orm\db\Query query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
- * @method static \mon\orm\db\Query execute(string $sql, array $bind = []) 执行sql指令语句
- * @method static \mon\orm\db\Query action(Closure $callback) 回调方法封装执行事务
- * @method static \mon\orm\db\Query actionXA(Closure $callback) 回调方法封装执行XA事务
- * @method static \mon\orm\db\Connection getLastSql() 获取最后执行的sql
- * @method static \mon\orm\db\Connection getLastInsID(string $pk) 获取最后新增的ID
- * @method static \mon\orm\db\Connection startTrans() 开启事务
- * @method static \mon\orm\db\Connection commit() 提交事务
- * @method static \mon\orm\db\Connection rollBack() 回滚事务
- * @method static \mon\orm\db\Connection startTransXA(string $xid) 开启XA分布式事务
- * @method static \mon\orm\db\Connection commitXA(string $xid) 提交XA事务
- * @method static \mon\orm\db\Connection rollbackXA(string $xid) 回滚XA事务
- * @method static \mon\orm\db\Connection prepareXA(string $xid) 预编译XA事务
+ * @method static array query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
+ * @method static integer execute(string $sql, array $bind = []) 执行sql指令语句
+ * @method static mixed action(Closure $callback) 回调方法封装执行事务
+ * @method static mixed actionXA(Closure $callback) 回调方法封装执行XA事务
+ * @method static string getLastSql() 获取最后执行的sql
+ * @method static integer getLastInsID(string $pk) 获取最后新增的ID
+ * @method static void startTrans() 开启事务
+ * @method static void commit() 提交事务
+ * @method static void rollBack() 回滚事务
+ * @method static void startTransXA(string $xid) 开启XA分布式事务
+ * @method static void commitXA(string $xid) 提交XA事务
+ * @method static void rollbackXA(string $xid) 回滚XA事务
+ * @method static void prepareXA(string $xid) 预编译XA事务
  * @author Mon <985558837@qq.com>
  * @version v2.3.0
  */

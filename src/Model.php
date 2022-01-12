@@ -15,9 +15,6 @@ use mon\orm\exception\DbException;
  * 模型基类
  * 
  * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
- * @method \mon\orm\db\Query update(array $data = []) 更新数据
- * @method \mon\orm\db\Query insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
- * @method \mon\orm\db\Query insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
  * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
  * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
  * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
@@ -29,19 +26,22 @@ use mon\orm\exception\DbException;
  * @method \mon\orm\db\Query alias(string $alias) 指定表别名
  * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
  * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
- * @method \mon\orm\db\Query query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
- * @method \mon\orm\db\Query execute(string $sql, array $bind = []) 执行sql指令语句
- * @method \mon\orm\db\Query action(Closure $callback) 回调方法封装执行事务
- * @method \mon\orm\db\Query actionXA(Closure $callback) 回调方法封装执行XA事务
- * @method \mon\orm\db\Connection getLastSql() 获取最后执行的sql
- * @method \mon\orm\db\Connection getLastInsID(string $pk) 获取最后新增的ID
- * @method \mon\orm\db\Connection startTrans() 开启事务
- * @method \mon\orm\db\Connection commit() 提交事务
- * @method \mon\orm\db\Connection rollback() 回滚事务
- * @method \mon\orm\db\Connection startTransXA(string $xid) 开启XA分布式事务
- * @method \mon\orm\db\Connection commitXA(string $xid) 提交XA事务
- * @method \mon\orm\db\Connection rollbackXA(string $xid) 回滚XA事务
- * @method \mon\orm\db\Connection prepareXA(string $xid) 预编译XA事务
+ * @method integer update(array $data = []) 更新数据
+ * @method integer insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
+ * @method integer insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
+ * @method mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
+ * @method integer execute(string $sql, array $bind = []) 执行sql指令语句
+ * @method mixed action(Closure $callback) 回调方法封装执行事务
+ * @method mixed actionXA(Closure $callback) 回调方法封装执行XA事务
+ * @method string getLastSql() 获取最后执行的sql
+ * @method integer getLastInsID(string $pk) 获取最后新增的ID
+ * @method void startTrans() 开启事务
+ * @method void commit() 提交事务
+ * @method void rollback() 回滚事务
+ * @method void startTransXA(string $xid) 开启XA分布式事务
+ * @method void commitXA(string $xid) 提交XA事务
+ * @method void rollbackXA(string $xid) 回滚XA事务
+ * @method void prepareXA(string $xid) 预编译XA事务
  * @author Mon 985558837@qq.com
  * @version v2.3.1
  */
