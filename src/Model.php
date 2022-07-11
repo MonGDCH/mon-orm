@@ -17,6 +17,14 @@ use mon\orm\exception\DbException;
  * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
  * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
  * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method \mon\orm\db\Query whereLike(string $field, mixed $condition, $logic = 'AND') 指定Like查询条件
+ * @method \mon\orm\db\Query whereNotLike(string $field, mixed $condition, $logic = 'AND') 指定NotLike查询条件
+ * @method \mon\orm\db\Query whereBetween(string $field, mixed $condition, $logic = 'AND') 指定Between查询条件
+ * @method \mon\orm\db\Query whereNotBetween(string $field, mixed $condition, $logic = 'AND') 指定NotBetween查询条件
+ * @method \mon\orm\db\Query whereIn(string $field, mixed $condition, $logic = 'AND') 指定In查询条件
+ * @method \mon\orm\db\Query whereNotIn(string $field, mixed $condition, $logic = 'AND') 指定NotIn查询条件
+ * @method \mon\orm\db\Query whereNull(string $field, $logic = 'AND') 指定Null查询条件
+ * @method \mon\orm\db\Query whereNotNull(string $field, $logic = 'AND') 指定NotNull查询条件
  * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
  * @method \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
  * @method \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
@@ -26,7 +34,11 @@ use mon\orm\exception\DbException;
  * @method \mon\orm\db\Query alias(string $alias) 指定表别名
  * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
  * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
+ * @method array select() 查询多条数据
+ * @method array find() 查询单条数据
  * @method integer update(array $data = []) 更新数据
+ * @method integer setInc(string|array $field, $step = 1) 字段自增
+ * @method integer setDec(string|array $field, $step = 1) 字段自减
  * @method integer insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
  * @method integer insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
  * @method mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
@@ -43,7 +55,7 @@ use mon\orm\exception\DbException;
  * @method void rollbackXA(string $xid) 回滚XA事务
  * @method void prepareXA(string $xid) 预编译XA事务
  * @author Mon 985558837@qq.com
- * @version v2.3.1
+ * @version v2.3.2 优化注解 2022-07-11
  */
 abstract class Model
 {
@@ -251,7 +263,7 @@ abstract class Model
      * @param  mixed   $sequence 自增序列名, 存在且为新增操作则放回自增ID
      * @param  boolean $replace  insert操作时，是否使用replace
      * @param  mixed   $query    查询对象实例
-     * @return mixed
+     * @return integer  影响行数
      */
     public function save(array $data, $where = null, $sequence = null, $replace = false, $query = null)
     {

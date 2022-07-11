@@ -93,18 +93,20 @@ rollBack() : void
 
 Db::startTrans();
 
-$save = Db::table('test')->insert([
-    'name'	=> mt_rand(1, 100) . 'b',
-    'update_time' => $_SERVER['REQUEST_TIME'],
-    'create_time' => $_SERVER['REQUEST_TIME'],
-]);
-
-if($save){
+try{
+    $save = Db::table('test')->insert([
+        'name'	=> mt_rand(1, 100) . 'b',
+        'update_time' => $_SERVER['REQUEST_TIME'],
+        'create_time' => $_SERVER['REQUEST_TIME'],
+    ]);
+    if(!$save){
+        Db::rollBack();
+        return false;
+    }
     Db::commit();
-}else{
+}catch(DbException $e){
     Db::rollBack();
 }
-
 ```
 
 
@@ -312,7 +314,9 @@ $save = Db::table('test')->where(['id' => 1])->update(['name' => 'uname']);
 > 字段值自增，返回影响行数, 更新数据必须存在where条件且自增字段必须为整形
 
 ```php
-setInc( string $field [, int $step ] ) : int
+setInc( string|array $field [, int $step ] ) : int
+
+inc( string|array $field [, int $step ] ) : Query
 ```
 
 #### 参数说明
@@ -342,7 +346,9 @@ $save = Db::table('test')->where(['id' => 1])->inc('age', 1)->update();
 > 字段值自减，返回影响行数, 更新数据必须存在where条件且自减字段必须为整形
 
 ```php
-setDec( string $field [, int $step ] ) : int
+setDec( string|array $field [, int $step ] ) : int
+
+dec( string|array $field [, int $step ] ) : Query
 ```
 
 #### 参数说明
@@ -958,3 +964,16 @@ union( string $union [, boolean $all ] ) : Query
 $save = Db::table('test')->union('SELECT * FROM DEMO')->select();
 ```
 
+### force 操作表名
+
+> 指定强制索引
+
+```php
+force(string $force) : Query
+```
+
+#### Demo
+
+```php
+$save = Db::table('test')->force('status')->select();
+```

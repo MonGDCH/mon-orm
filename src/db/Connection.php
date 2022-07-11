@@ -26,7 +26,7 @@ use mon\orm\exception\DbException;
  * @method Query inc(string $field, integer $step = 1) 字段值增长
  * @method Query dec(string $field, integer $step = 1) 字段值减少
  * @author Mon 985558837@qq.com
- * @version v2.3.1
+ * @version v2.4.0  优化代码，支持读写分离  2022-07-11
  */
 class Connection
 {
@@ -36,6 +36,20 @@ class Connection
      * @var PDO
      */
     protected $link = null;
+
+    /**
+     * 写入操作PDO链接
+     *
+     * @var PDO
+     */
+    protected $writeLink = null;
+
+    /**
+     * 读取操作PDO链接
+     *
+     * @var PDO
+     */
+    protected $readLink = null;
 
     /**
      * 查询结果集
@@ -97,8 +111,8 @@ class Connection
         'password'          => '',
         // 端口
         'port'              => '3306',
-        // 数据库编码默认采用utf8
-        'charset'           => 'utf8',
+        // 数据库编码默认采用utf8mb4
+        'charset'           => 'utf8mb4',
         // 返回结果集类型
         'result_type'       => PDO::FETCH_ASSOC,
     ];
@@ -243,46 +257,35 @@ class Connection
     }
 
     /**
-     * 链接DB
+     * 链接数据库
      *
-     * @param  array  $config 配置信息
-     * @throws DbException
-     * @return Connection 实例自身
+     * @param array $config 链接配置信息
+     * @return PDO
      */
     public function connect(array $config = [])
     {
         try {
-            if (!empty($config) && is_array($config)) {
-                $this->config = array_merge((array) $this->config, $config);
+            // 配置信息
+            if (empty($config)) {
+                $config = $this->config;
+            } else {
+                $config = array_merge($this->config, $config);
             }
             // 生成mysql连接dsn
-            $dsn = 'mysql:host=' . $this->config['host'];
-            if (is_int($this->config['port'] * 1)) {
-                $dsn .= ';port=' . $this->config['port'];
-            }
-            if (!empty($this->config['database'])) {
-                $dsn .= ';dbname=' . $this->config['database'];
-            }
-            if (!empty($this->config['charset'])) {
-                $dsn .= ';charset=' . $this->config['charset'];
-            }
+            $dsn = $this->getConnectDsn($config);
             // 连接参数
-            if (isset($this->config['params']) && is_array($this->config['params'])) {
-                $params = $this->config['params'] + $this->params;
-            } else {
-                $params = $this->params;
-            }
+            $params = $this->getConnectParams($config);
             // 链接数据库
-            $this->link = new PDO(
+            $link = new PDO(
                 $dsn,
-                $this->config['username'],
-                $this->config['password'],
+                $config['username'],
+                $config['password'],
                 $params
             );
             // 触发链接事件
-            Db::trigger('connect', $this, $this->config);
+            Db::trigger('connect', $this, $config);
 
-            return $this;
+            return $link;
         } catch (PDOException $e) {
             throw new DbException(
                 'Link Error: ' . $e->getMessage(),
@@ -294,14 +297,62 @@ class Connection
     }
 
     /**
-     * 获取DB链接
+     * 连接分布式数据库
      *
-     * @return mixed 数据库链接
+     * @param boolean $master 获取主服务器或者从服务器
+     * @return PDO
      */
-    public function getLink()
+    public function multiConnect($master = true)
     {
-        if (is_null($this->link)) {
-            $this->connect();
+        // 获取读取或者写入的配置信息
+        $readWrite = $master ? 'write' : 'read';
+        $dbConfigs = isset($this->config[$readWrite]) ? $this->config[$readWrite] : [];
+        // 随机获取读写配置节点
+        $dbConfig = [];
+        if (!empty($dbConfigs)) {
+            $total = count($dbConfigs) - 1;
+            $num = floor(mt_rand(0, $total > 0 ? $total : 0));
+            $dbConfig = $dbConfigs[$num];
+        }
+        // 覆盖生成配置
+        $config = $this->config;
+        foreach (['host', 'database', 'username', 'password', 'port', 'params', 'charset'] as $name) {
+            if (isset($dbConfig[$name])) {
+                $config[$name] = $dbConfig[$name];
+            }
+        }
+
+        return $this->connect($config);
+    }
+
+    /**
+     * 获取数据库链接
+     *
+     * @param boolean $master 是否主服务器
+     * @return PDO 数据库链接
+     */
+    public function getLink($master = true)
+    {
+        if (isset($this->config['rw_separate']) && $this->config['rw_separate']) {
+            // 开启分布式数据库
+            if ($master || $this->transLevel) {
+                // 增、删、改、开启事务则使用主库连接
+                if (is_null($this->writeLink)) {
+                    $this->writeLink = $this->multiConnect(true);
+                }
+
+                $this->link = $this->writeLink;
+            } else {
+                // 查使用从库链接
+                if (!$this->readLink) {
+                    $this->readLink = $this->multiConnect(false);
+                }
+
+                $this->link = $this->readLink;
+            }
+        } else if (is_null($this->link)) {
+            // 链接默认数据库
+            $this->link = $this->connect();
         }
 
         return $this->link;
@@ -333,7 +384,7 @@ class Connection
         try {
             // 预处理SQL
             if (empty($this->PDOStatement)) {
-                $this->PDOStatement = $this->getLink()->prepare($sql);
+                $this->PDOStatement = $this->getLink(false)->prepare($sql);
             }
             // 是否为存储过程调用
             $procedure = in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
@@ -451,7 +502,7 @@ class Connection
             if ($this->transLevel == 1) {
                 $this->getLink()->beginTransaction();
                 // 触发开启事务事件
-                Db::trigger('startTrans', $this, $this->getConfig());
+                Db::trigger('startTrans', $this);
             } elseif ($this->transLevel > 1) {
                 $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
             }
@@ -475,7 +526,7 @@ class Connection
         if ($this->transLevel == 1) {
             $this->getLink()->commit();
             // 触发提交事务事件
-            Db::trigger('commitTrans', $this, $this->getConfig());
+            Db::trigger('commitTrans', $this);
         }
         --$this->transLevel;
     }
@@ -491,7 +542,7 @@ class Connection
             $this->transLevel = 0;
             $this->getLink()->rollBack();
             // 触发回滚事务事件
-            Db::trigger('rollbackTrans', $this, $this->getConfig());
+            Db::trigger('rollbackTrans', $this);
         } elseif ($this->transLevel > 1) {
             $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
         }
@@ -508,7 +559,7 @@ class Connection
     {
         $this->getLink()->exec("XA START '$xid'");
         // 触发开启跨库事件
-        Db::trigger('startTransXA', $this, $this->getConfig());
+        Db::trigger('startTransXA', $this);
     }
 
     /**
@@ -522,7 +573,7 @@ class Connection
         $this->getLink()->exec("XA END '$xid'");
         $this->getLink()->exec("XA PREPARE '$xid'");
         // 触发预编译XA事务事件
-        Db::trigger('prepareTransXA', $this, $this->getConfig());
+        Db::trigger('prepareTransXA', $this);
     }
 
     /**
@@ -535,7 +586,7 @@ class Connection
     {
         $this->getLink()->exec("XA COMMIT '$xid'");
         // 触发提交跨库事务事件
-        Db::trigger('commitTransXA', $this, $this->getConfig());
+        Db::trigger('commitTransXA', $this);
     }
 
     /**
@@ -548,7 +599,7 @@ class Connection
     {
         $this->getLink()->exec("XA ROLLBACK '$xid'");
         // 触发回滚跨库事务事件
-        Db::trigger('rollbackTransXA', $this, $this->getConfig());
+        Db::trigger('rollbackTransXA', $this);
     }
 
     /**
@@ -816,12 +867,54 @@ class Connection
         }
 
         $error = $e->getMessage();
-
         foreach ($this->breakMatchStr as $msg) {
             if (false !== stripos($error, $msg)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * 获取PDO连接DSN
+     *
+     * @param array $config 数据库配置
+     * @return string
+     */
+    protected function getConnectDsn(array $config)
+    {
+        // 生成mysql连接dsn
+        $dsn = 'mysql:host=' . $config['host'];
+        if (is_int($config['port'] * 1)) {
+            $dsn .= ';port=' . $config['port'];
+        }
+        if (!empty($config['database'])) {
+            $dsn .= ';dbname=' . $config['database'];
+        }
+        if (!empty($config['charset'])) {
+            $dsn .= ';charset=' . $config['charset'];
+        }
+
+        return $dsn;
+    }
+
+    /**
+     * 获取数据库连接params
+     *
+     * @param array $config 数据库配置
+     * @return array
+     */
+    protected function getConnectParams(array $config)
+    {
+        $params = $this->params;
+        if (isset($config['params']) && is_array($config['params'])) {
+            $params = $config['params'] + $this->params;
+        }
+        // 判断是否开启断线重连，开启断线重连，则采用PDO长链接
+        if (Db::reconnect()) {
+            $params[PDO::ATTR_PERSISTENT] = true;
+        }
+
+        return $params;
     }
 }

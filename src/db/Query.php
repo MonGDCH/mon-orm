@@ -19,7 +19,7 @@ use mon\orm\exception\DbException;
  * 查询构造器
  *
  * @author Mon 985558837@qq.com
- * @version 2.0.0
+ * @version 2.0.1  修正saevAll方法缺失，优化代码    2022-07-08
  */
 class Query
 {
@@ -419,7 +419,7 @@ class Query
     /**
      * 字段自增
      *
-     * @param string  $field 字段名
+     * @param string|array  $field 字段名
      * @param integer $step  步长
      * @return integer 影响行数
      */
@@ -431,7 +431,7 @@ class Query
     /**
      * 字段自减
      *
-     * @param string  $field 字段名
+     * @param string|array  $field 字段名
      * @param integer $step  步长
      * @return integer 影响行数
      */
@@ -1252,6 +1252,120 @@ class Query
     }
 
     /**
+     * 获取数据库的配置参数
+     *
+     * @param string $name 参数名称
+     * @return mixed
+     */
+    public function getConfig($name = '')
+    {
+        return $this->connection->getConfig($name);
+    }
+
+    /**
+     * 模型类save方法支持
+     *
+     * @param  array $data     操作数据
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
+     * @param  boolean $replace replace操作
+     * @throws DbException
+     * @return integer 影响行数
+     */
+    public function save(array $data, $where = null, $sequence = null, $replace = false)
+    {
+        if (!$this->getModel()) {
+            throw new DbException(
+                'The instance is not bound to the Model!',
+                DbException::QUERY_MODEL_NOT_BIND
+            );
+        }
+        if (!method_exists($this->getModel(), 'save')) {
+            throw new DbException(
+                'The model not support autocomplete of [save!',
+                DbException::MODEL_NOT_SUPPORT_SAVE
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'save'], [$data, $where, $sequence, $replace, $this]);
+    }
+
+    /**
+     * 模型类saveAll方法支持
+     *
+     * @param array $data   操作数据
+     * @param boolean $replace  是否replace
+     * @throws DbException
+     * @return integer 影响行数
+     */
+    public function saveAll(array $data, $replace = false)
+    {
+        if (!$this->getModel()) {
+            throw new DbException(
+                'The instance is not bound to the Model!',
+                DbException::QUERY_MODEL_NOT_BIND
+            );
+        }
+        if (!method_exists($this->getModel(), 'saveAll')) {
+            throw new DbException(
+                'The model not support autocomplete of [saveAll]',
+                DbException::MODEL_NOT_SUPPORT_SAVEALL
+            );
+        }
+        return call_user_func_array([$this->getModel(), 'saveAll'], [$data, $replace, $this]);
+    }
+
+    /**
+     * 模型类get方法支持
+     *
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @throws DbException
+     * @return Data 结果集
+     */
+    public function get($where = [])
+    {
+        if (!$this->getModel()) {
+            throw new DbException(
+                'The instance is not bound to the Model!',
+                DbException::QUERY_MODEL_NOT_BIND
+            );
+        }
+        if (!method_exists($this->getModel(), 'get')) {
+            throw new DbException(
+                'The model not support autocomplete of [get]',
+                DbException::MODEL_NOT_SUPPORT_GET
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'get'], [$where, $this]);
+    }
+
+    /**
+     * 模型类all方法支持
+     *
+     * @param  array $where    where条件，存在则为更新，反之新增
+     * @throws DbException
+     * @return DataCollection 结果集
+     */
+    public function all($where = [])
+    {
+        if (!$this->getModel()) {
+            throw new DbException(
+                'The instance is not bound to the Model!',
+                DbException::QUERY_MODEL_NOT_BIND
+            );
+        }
+        if (!method_exists($this->getModel(), 'all')) {
+            throw new DbException(
+                'The model not support autocomplete of [all]',
+                DbException::MODEL_NOT_SUPPORT_ALL
+            );
+        }
+
+        return call_user_func_array([$this->getModel(), 'all'], [$where, $this]);
+    }
+
+    /**
      * 分析查询表达式
      *
      * @param string        $logic     查询逻辑 and or xor
@@ -1329,6 +1443,51 @@ class Query
     }
 
     /**
+     * 分析表达式（可用于查询或者写入操作）
+     *
+     * @throws DbException
+     * @return array
+     */
+    protected function parseExpress()
+    {
+        $options = $this->options;
+
+        if (empty($options['table'])) {
+            throw new DbException(
+                'The query table is not set!',
+                DbException::TABLE_NULL_FOUND
+            );
+        }
+
+        if (!isset($options['where'])) {
+            $options['where'] = [];
+        }
+
+        if (!isset($options['field'])) {
+            $options['field'] = '*';
+        }
+
+        if (!isset($options['data'])) {
+            $options['data'] = [];
+        }
+
+        foreach (['lock', 'distinct'] as $name) {
+            if (!isset($options[$name])) {
+                $options[$name] = false;
+            }
+        }
+
+        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment', 'extra', 'using', 'duplicate'] as $name) {
+            if (!isset($options[$name])) {
+                $options[$name] = '';
+            }
+        }
+
+        $this->options = [];
+        return $options;
+    }
+
+    /**
      * 获取Join表名及别名 支持
      * ['prefix_table或者子查询'=>'alias'] 'prefix_table alias' 'table alias'
      *
@@ -1377,145 +1536,11 @@ class Query
     }
 
     /**
-     * 获取数据库的配置参数
-     *
-     * @param string $name 参数名称
-     * @return mixed
-     */
-    public function getConfig($name = '')
-    {
-        return $this->connection->getConfig($name);
-    }
-
-    /**
-     * 分析表达式（可用于查询或者写入操作）
-     *
-     * @throws DbException
-     * @return array
-     */
-    public function parseExpress()
-    {
-        $options = $this->options;
-
-        if (empty($options['table'])) {
-            throw new DbException(
-                'The query table is not set!',
-                DbException::TABLE_NULL_FOUND
-            );
-        }
-
-        if (!isset($options['where'])) {
-            $options['where'] = [];
-        }
-
-        if (!isset($options['field'])) {
-            $options['field'] = '*';
-        }
-
-        if (!isset($options['data'])) {
-            $options['data'] = [];
-        }
-
-        foreach (['lock', 'distinct'] as $name) {
-            if (!isset($options[$name])) {
-                $options[$name] = false;
-            }
-        }
-
-        foreach (['join', 'union', 'group', 'having', 'limit', 'order', 'force', 'comment', 'extra', 'using', 'duplicate'] as $name) {
-            if (!isset($options[$name])) {
-                $options[$name] = '';
-            }
-        }
-
-        $this->options = [];
-        return $options;
-    }
-
-    /**
-     * 模型类save方法支持
-     *
-     * @param  array $data     操作数据
-     * @param  array $where    where条件，存在则为更新，反之新增
-     * @param  mixed $sequence 自增序列名, 存在且为新增操作则放回自增ID
-     * @param  boolean $replace replace操作
-     * @throws DbException
-     * @return mixed 结果集
-     */
-    public function save($data, $where = null, $sequence = null, $replace = false)
-    {
-        if (!$this->getModel()) {
-            throw new DbException(
-                'The instance is not bound to the Model!',
-                DbException::QUERY_MODEL_NOT_BIND
-            );
-        }
-        if (!method_exists($this->getModel(), 'save')) {
-            throw new DbException(
-                'The model not support autocomplete of save!',
-                DbException::MODEL_NOT_SUPPORT_SAVE
-            );
-        }
-
-        return call_user_func_array([$this->getModel(), 'save'], [$data, $where, $sequence, $replace, $this]);
-    }
-
-    /**
-     * 模型类get方法支持
-     *
-     * @param  array $where    where条件，存在则为更新，反之新增
-     * @throws DbException
-     * @return Data 结果集
-     */
-    public function get($where = [])
-    {
-        if (!$this->getModel()) {
-            throw new DbException(
-                'The instance is not bound to the Model!',
-                DbException::QUERY_MODEL_NOT_BIND
-            );
-        }
-        if (!method_exists($this->getModel(), 'get')) {
-            throw new DbException(
-                'The model not support autocomplete of get!',
-                DbException::MODEL_NOT_SUPPORT_GET
-            );
-        }
-
-        return call_user_func_array([$this->getModel(), 'get'], [$where, $this]);
-    }
-
-    /**
-     * 模型类all方法支持
-     *
-     * @param  array $where    where条件，存在则为更新，反之新增
-     * @throws DbException
-     * @return DataCollection 结果集
-     */
-    public function all($where = [])
-    {
-        if (!$this->getModel()) {
-            throw new DbException(
-                'The instance is not bound to the Model!',
-                DbException::QUERY_MODEL_NOT_BIND
-            );
-        }
-        if (!method_exists($this->getModel(), 'all')) {
-            throw new DbException(
-                'The model not support autocomplete of all!',
-                DbException::MODEL_NOT_SUPPORT_ALL
-            );
-        }
-
-        return call_user_func_array([$this->getModel(), 'all'], [$where, $this]);
-    }
-
-    /**
      * 获取Builder类对象实例
      *
      * @return Builder 查询语句构造器实例
      */
-    private function getBuilder()
+    protected function getBuilder()
     {
         return new Builder($this->connection, $this);
     }

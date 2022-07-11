@@ -158,7 +158,7 @@ class Db
 	}
 
 	/**
-	 * 定义或获取数据库断开是否重连
+	 * 定义或获取数据库断开是否自动重连
 	 *
 	 * @param boolean $reconnect
 	 * @return boolean
@@ -174,7 +174,7 @@ class Db
 	/**
 	 * 监听事件
 	 *
-	 * @param mixed $event   钩子名称
+	 * @param string $event   钩子名称
 	 * @param mixed $callbak 钩子回调
 	 * @return void
 	 */

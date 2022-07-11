@@ -15,6 +15,13 @@ class Test extends \mon\orm\Model
 	public $table = [模型操作的表名];
 
 	/**
+     * 链接配置节点
+     *
+     * @var string
+     */
+    protected $connection = [模型使用的配置信息节点名];
+
+	/**
 	 * 模型独立使用的配置信息
 	 * @var array
 	 */
@@ -24,28 +31,40 @@ class Test extends \mon\orm\Model
 	 * 新增自动写入字段
 	 * @var array
 	 */
-	protected $insert = [
-		'create_time'	=> '',
-		'update_time'	=> '',
-		'status'	=> 1,
-	];
+	protected $insert = ['create_time' => '', 'update_time'	=> '', 'status'	=> 1];
 
 	/**
 	 * 更新自动写入字段
 	 * @var array
 	 */
-	protected $update = [
-		'update_time'
-	];
+	protected $update = ['update_time'];
 
 	/**
 	 * 自动补全查询数据
 	 * @var array
 	 */
-	protected $append = [
-		'count',
-		'age'	=> 18,
-	];
+	protected $append = ['count', 'age'	=> 18];
+
+	/**
+     * 只读字段，不允许修改
+     *
+     * @var array
+     */
+	protected $readonly = ['id'];
+
+	/**
+     * 只允许操作的字段
+     *
+     * @var array
+     */
+    protected $allow = [];
+
+	/**
+     * 验证器驱动，默认为内置的Validate验证器
+     *
+     * @var string
+     */
+    protected $validate = Validate::class;
 
 	/**
 	 * 自动完成create_time字段
@@ -124,7 +143,7 @@ class Test extends \mon\orm\Model
 $find = Test::where('id', 1)->find();
 ```
 
-#### 获取DB实例
+### 获取DB实例
 
 > 获取模型封装的DB实例
 
@@ -151,7 +170,7 @@ $connect = Test::db();
 
 ```
 
-#### 查询场景
+### 查询场景
 
 > 使用模型查询场景可以更好的抽象化查询业务，对特定业务特定场景的业务逻辑进行封装。
 
@@ -188,9 +207,9 @@ $this->scope(function($query){
 
 ```
 
-#### 保存数据
+### 保存数据
 
-> 结合insert、update两个属性可以做到在新增或者更新数据时，实现数据自动完成（设置器）
+> 结合`insert`、`update`两个属性可以做到在新增或者更新数据时，实现数据自动完成（设置器）
 
 ```php
 save( array $data [ , array $where, string $sequence, Query $query ] ) : Data
@@ -219,7 +238,7 @@ $save = $this->save(['name' => 'demo'], ['id' => 1]);
 
 ##### 新增时自动写入或补全
 
-定义$this->insert属性，设置新增时要自动完成的数据
+定义`insert`属性，设置新增时要自动完成的数据
 
 ```php
 
@@ -245,20 +264,20 @@ protected function setUpdateTimeAttr($val, $row = []){
 
 ```
 
-* 当设置了insert属性后，新增时会自动查找写入的数据并对数据进行调整和补全
-* insert属性中设置了update_time字段，且存在setUpdateTimeAttr方法，则会调用setUpdateTimeAttr方法并传入写入的数据中的值，及对应的写入数据。如不存在setUpdateTimeAttr方法则使用insert属性中设置的值
+* 当设置了`insert`属性后，新增时会自动查找写入的数据并对数据进行调整和补全
+* `insert`属性中设置了update_time字段，且存在setUpdateTimeAttr方法，则会调用setUpdateTimeAttr方法并传入写入的数据中的值，及对应的写入数据。如不存在setUpdateTimeAttr方法则使用`insert`属性中设置的值
 * 对应自动完成使用名为驼峰法命名，会将设置的字段名中的“_”转换为驼峰式
 
 
 ##### 更新时自动写入或补全
 
-* 当设置了update属性后，更新时会自动查找写入的数据并对数据进行调整和补全
+* 当设置了`update`属性后，更新时会自动查找写入的数据并对数据进行调整和补全
 * 具体实现方式与上述的新增时一致，使用设置器实现
 
 
-#### 获取单条记录
+### 获取单条记录
 
-> 结合append属性可以做到在获取数据时，实现数据自动完成（获取器）
+> 结合`append`属性可以做到在获取数据时，实现数据自动完成（获取器）
 
 ```php
 get( [ array $where, Db $db ] ) : Data
@@ -285,7 +304,7 @@ $find = $this->where('id', 1)->where(['status' => 1])->get();
 
 ##### 读取数据时，补全数据
 
-定义$this->append属性，设置新增时要自动完成的数据
+定义`append`属性，设置新增时要自动完成的数据
 
 ```php
 
@@ -323,13 +342,13 @@ protected function getCreateTimeAttr($val, $row){
 ```
 
 * 获取数据后获取器会自动识别查询的数据中是否存在create_time字段，如果存在，则会调用getCreateTimeAttr方法进行补全，将原值及行数据闯入，并使用返回值作为新的字段值。
-* 设置了append属性后，获取器同时会扫描append属性，将append属性中设置的字段自动写入到查询的结果中。
+* 设置了`append`属性后，获取器同时会扫描`append`属性，将`append`属性中设置的字段自动写入到查询的结果中。
 * 对应自动完成使用名为驼峰法命名，会将设置的字段名中的“_”转换为驼峰式
 
 
-#### 查询多条记录
+### 查询多条记录
 
-> 结合append属性可以做到在获取数据时，实现数据自动完成（获取器）
+> 结合`append`属性可以做到在获取数据时，实现数据自动完成（获取器）
 
 ```php
 all( [ array $where, Db $db ] ) : Data
@@ -355,3 +374,54 @@ $find = $this->where('id', 1)->where(['status' => 1])->all();
 ```
 
 * 与上述的获取一条记录get方法一样，all方法同样支持获取器的使用。
+
+
+### 批量写入数据库
+
+> 结合`insert`属性实现数据自动完成
+
+```php
+saveAll(array $data, [boolean $replace, mixed $query]) : integer
+```
+
+#### 参数说明
+
+| 参数名 | 类型 | 是否必须 | 描述 | 默认值 |
+| ------------ | ------------ | ------------ | ------------ | ------------ |
+| data | array | 是 | 批量写入的数据，二维数组 | 无 |
+| replace | boolean | 否 | 是否使用 replace 查询 | false |
+| query | mixed | 否 | 查询实例 | 当前链接实例 |
+
+
+### 允许新增或修改的字段
+
+> 设置当前查询允许新增或修改的字段
+
+```php
+allowField(array $field) : Model
+```
+
+#### Demo
+
+```php
+$this->allowField(['name', 'age'])->save(['name'=>'test', 'age'=>18, 'sex' => 1, 'height'=> 188]);
+```
+
+
+### 验证器
+
+> 默认绑定`mongdch/mon-util`库中`Validate`验证器，可通过`validate`属性自定义绑定
+
+
+#### Demo
+
+```php
+
+$check = $this->validate()->data($data)->scope('login')->check();
+if(!$check){
+	$this->error = $this->validate()->getError();
+	return false;
+}
+// 登录操作......
+return true;
+```

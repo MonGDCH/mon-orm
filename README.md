@@ -8,6 +8,7 @@
 * 自动参数绑定
 * 支持断线重连
 * 支持查询事件监听
+* 支持自动分布式部署读写分离
 
 ## 安装
 
@@ -21,9 +22,103 @@ composer require mongdch/mon-orm
 
 ## 使用
 
-### Db类
+```php
+
+// 数据库配置
+return [
+    // 默认使用的链接配置
+    'default'   => [
+        // 数据库类型，只支持mysql
+        'type'          => 'mysql',
+        // 服务器地址
+        'host'          => '127.0.0.1',
+        // 数据库名
+        'database'      => 'test',
+        // 用户名
+        'username'      => 'root',
+        // 密码
+        'password'      => 'root',
+        // 端口
+        'port'          => '3306',
+        // 数据库连接参数
+        'params'        => [],
+        // 数据库编码默认采用utf8
+        'charset'       => 'utf8mb4',
+        // 返回结果集类型
+        'result_type'   => PDO::FETCH_ASSOC,
+        // 是否开启读写分离
+        'rw_separate'   => true,
+        // 查询数据库连接配置，二维数组随机获取节点覆盖默认配置信息
+        'read'          => [
+            [
+                // 用户名
+                'username'  => 'root',
+                // 密码
+                'password'  => '123456',
+                // 端口
+                'port'      => '3307',
+            ],
+            [
+                // 数据库名
+                'database'  => 'demo',
+                // 密码
+                'password'  => '654321',
+                // 端口
+                'port'      => '3308',
+            ]
+        ],
+        // 写入数据库连接配置，同上，开启事务后，读取不会调用查询数据库配置
+        'write'         => [
+            [
+                // 服务器地址
+                'host'      => '127.0.0.1',
+                // 数据库名
+                'database'  => 'test',
+                // 用户名
+                'username'  => 'root',
+                // 密码
+                'password'  => 'root',
+                // 端口
+                'port'      => '3306',
+            ]
+        ]
+    ],
+    // 测试数据库连接配置
+    'test'      => [
+        // 数据库类型，只支持mysql
+        'type'          => 'mysql',
+        // 服务器地址
+        'host'          => '127.0.0.1',
+        // 数据库名
+        'database'      => 'test',
+        // 用户名
+        'username'      => 'root',
+        // 密码
+        'password'      => 'root',
+        // 端口
+        'port'          => '3306',
+        // 数据库连接参数
+        'params'        => [],
+        // 数据库编码默认采用utf8
+        'charset'       => 'utf8mb4',
+        // 返回结果集类型
+        'result_type'   => PDO::FETCH_ASSOC,
+        // 是否开启读写分离
+        'rw_separate'   => true,
+        // 是否开启读写分离
+        'rw_separate'   => false,
+        // 查询数据库连接配置，二维数组随机获取节点覆盖默认配置信息
+        'read'          => [],
+        // 写入数据库连接配置，同上，开启事务后，读取不会调用查询数据库配置
+        'write'         => []
+    ]
+];
 
 ```
+
+### Db类
+
+```php
 use mon\orm\Db;
 // 基础配置信息
 $config = [
@@ -38,7 +133,7 @@ $config = [
 Db::connect($config)->table('test')->select();
 ```
 
-```
+```php
 use mon\orm\Db;
 $config = [
 	'default' => [
@@ -58,7 +153,7 @@ Db::getLastSql();
 
 定义模型
 
-```
+```php
 use mon\orm\Model;
 class Test extends Model
 {
@@ -78,28 +173,19 @@ class Test extends Model
 	 * 新增自动写入字段
 	 * @var array
 	 */
-	protected $insert = [
-		'create_time'	=> '',
-		'update_time'	=> '',
-		'status'	=> 1,
-	];
+	protected $insert = ['create_time' => '', 'update_time'	=> '', 'status'	=> 1];
 
 	/**
 	 * 更新自动写入字段
 	 * @var array
 	 */
-	protected $update = [
-		'update_time'
-	];
+	protected $update = ['update_time'];
 
 	/**
 	 * 自动补全查询数据
 	 * @var array
 	 */
-	protected $append = [
-		'count',
-		'age'	=> 18,
-	];
+	protected $append = ['count', 'age'	=> 18,];
 
 	/**
 	 * 自动完成create_time字段
@@ -138,7 +224,7 @@ class Test extends Model
 	 * @param  array $row [description]
 	 * @return integer
 	 */
-	protected function getcountAttr($val, $row)
+	protected function getCountAttr($val, $row)
 	{
 		return count($row);
 	}
@@ -165,11 +251,12 @@ class Test extends Model
 		})->select();
 	}
 }
+
 ```
 
 使用模型
 
-```
+```php
 // 调用结果Db类查询
 $find = Test::where('id', 1)->find();
 
@@ -200,19 +287,26 @@ $test->all(['status' => 1]);
 $data = $test->scope('test')->where('id', 20)->all();
 ```
 
+定义断线重连，默认断线不重连，开启断线重连将使用长链接的方式链接数据库
 
-定义断线重连,默认断线不重连
-
-```
+```php
 Db::reconnect(true);
 
 ```
 
-##### 更多使用方式请查看examples
+##### 更多使用方式及文档请查看doc目录下文档文件及examples目录下演示demo
 
 ---
 
 # 版本
+
+### 2.5.0
+
+* 优化代码
+* 断线自动重连默认使用长链接
+* 支持分布式部署数据库读写分离(通过配置文件自动识别)
+* 版本升级修改了`conncet`方法返回值，生产环境请谨慎升级
+
 
 ### 2.4.7
 
