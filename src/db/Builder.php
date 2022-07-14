@@ -5,7 +5,7 @@ namespace mon\orm\db;
 use mon\orm\exception\DbException;
 
 /**
- * 查询语句构造对象
+ * 查询语句构造器
  * 
  * @author Mon <985558837@qq.com>
  * @version 2.0.0

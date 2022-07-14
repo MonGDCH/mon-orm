@@ -102,7 +102,7 @@ class DataCollection implements JsonSerializable, ArrayAccess, Countable, Iterat
      * ArrayAccess相关处理方法, 获取某个值
      *
      * @param string $offset
-     * @return boolean
+     * @return mixed
      */
     public function offsetGet($offset)
     {

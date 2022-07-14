@@ -420,7 +420,7 @@ class Query
      * 字段自增
      *
      * @param string|array  $field 字段名
-     * @param integer $step  步长
+     * @param float $step  步长
      * @return integer 影响行数
      */
     public function setInc($field, $step = 1)
@@ -432,7 +432,7 @@ class Query
      * 字段自减
      *
      * @param string|array  $field 字段名
-     * @param integer $step  步长
+     * @param float $step  步长
      * @return integer 影响行数
      */
     public function setDec($field, $step = 1)
@@ -1110,6 +1110,38 @@ class Query
     }
 
     /**
+     * 字段值增长
+     *
+     * @param string|array $field 字段名
+     * @param float $step  增长值
+     * @return Query    当前实例自身
+     */
+    public function inc($field, $step = 1)
+    {
+        $fields = is_string($field) ? explode(',', $field) : $field;
+        foreach ($fields as $field) {
+            $this->data($field, ['inc', $step]);
+        }
+        return $this;
+    }
+
+    /**
+     * 字段值减少
+     *
+     * @param string|array $field 字段名
+     * @param float $step  增长值
+     * @return Query    当前实例自身
+     */
+    public function dec($field, $step = 1)
+    {
+        $fields = is_string($field) ? explode(',', $field) : $field;
+        foreach ($fields as $field) {
+            $this->data($field, ['dec', $step]);
+        }
+        return $this;
+    }
+
+    /**
      * 查询lock
      *
      * @param boolean|string $lock 是否lock
@@ -1175,38 +1207,6 @@ class Query
     {
         $this->options['comment'] = $comment;
 
-        return $this;
-    }
-
-    /**
-     * 字段值增长
-     *
-     * @param string|array $field 字段名
-     * @param integer      $step  增长值
-     * @return Query    当前实例自身
-     */
-    public function inc($field, $step = 1)
-    {
-        $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach ($fields as $field) {
-            $this->data($field, ['inc', $step]);
-        }
-        return $this;
-    }
-
-    /**
-     * 字段值减少
-     *
-     * @param string|array $field 字段名
-     * @param integer      $step  增长值
-     * @return Query    当前实例自身
-     */
-    public function dec($field, $step = 1)
-    {
-        $fields = is_string($field) ? explode(',', $field) : $field;
-        foreach ($fields as $field) {
-            $this->data($field, ['dec', $step]);
-        }
         return $this;
     }
 
@@ -1411,17 +1411,14 @@ class Query
         } elseif (in_array(strtolower($op), ['null', 'notnull', 'not null'])) {
             // null查询
             $where[$field] = [$op, ''];
-
             $this->options['multi'][$logic][$field][] = $where[$field];
         } elseif (is_null($condition)) {
             // 字段相等查询
             $where[$field] = ['=', $op];
-
             $this->options['multi'][$logic][$field][] = $where[$field];
         } else {
-
-            $where[$field] = [$op, $condition];
             // 记录一个字段多次查询条件
+            $where[$field] = [$op, $condition];
             $this->options['multi'][$logic][$field][] = $where[$field];
         }
 

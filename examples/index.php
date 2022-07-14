@@ -1,6 +1,6 @@
 <?php
 
-// require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use mon\orm\Db;
 use mon\orm\exception\DbException;
@@ -8,7 +8,7 @@ use mon\orm\Model;
 
 $config = require('config.php');
 Db::setConfig($config);
-Db::reconnect(true);
+// Db::reconnect(true);
 
 class App extends Model
 {
@@ -58,7 +58,14 @@ class App extends Model
         $save = $this->save($data);
         debug($data);
     }
+
+    public function test5()
+    {
+        // $data = $this->execute("OPTIMIZE TABLE `{$this->table}`");
+        $data = $this->execute("REPAIR TABLE `{$this->table}`");
+        debug($data);
+    }
 }
 
 // (new App)->test1();
-// (new App)->test4();
+(new App)->test5();

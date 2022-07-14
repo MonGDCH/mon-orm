@@ -5,7 +5,7 @@ namespace mon\orm\db;
 use mon\orm\exception\DbException;
 
 /**
- * 原生表达式定义类
+ * 原生表达式定义对象
  * 
  * @author Mon <985558837@qq.com>
  * @version 1.0.0

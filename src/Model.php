@@ -32,19 +32,12 @@ use mon\orm\exception\DbException;
  * @method \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
  * @method \mon\orm\db\Query field(mixed $field) 指定查询字段
  * @method \mon\orm\db\Query alias(string $alias) 指定表别名
- * @method \mon\orm\db\Query inc(string $field, integer $step = 1) 字段值增长
- * @method \mon\orm\db\Query dec(string $field, integer $step = 1) 字段值减少
- * @method array select() 查询多条数据
- * @method array find() 查询单条数据
- * @method integer update(array $data = []) 更新数据
- * @method integer setInc(string|array $field, $step = 1) 字段自增
- * @method integer setDec(string|array $field, $step = 1) 字段自减
+ * @method \mon\orm\db\Query inc(string $field, float $step = 1) 字段值增长
+ * @method \mon\orm\db\Query dec(string $field, float $step = 1) 字段值减少
  * @method integer insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
  * @method integer insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
  * @method mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
  * @method integer execute(string $sql, array $bind = []) 执行sql指令语句
- * @method mixed action(Closure $callback) 回调方法封装执行事务
- * @method mixed actionXA(Closure $callback) 回调方法封装执行XA事务
  * @method string getLastSql() 获取最后执行的sql
  * @method integer getLastInsID(string $pk) 获取最后新增的ID
  * @method void startTrans() 开启事务

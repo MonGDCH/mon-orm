@@ -234,7 +234,7 @@ class Data implements JsonSerializable, ArrayAccess, Countable, IteratorAggregat
      * ArrayAccess相关处理方法, 获取某个值
      *
      * @param string $name
-     * @return boolean
+     * @return mixed
      */
     public function offsetGet($name)
     {

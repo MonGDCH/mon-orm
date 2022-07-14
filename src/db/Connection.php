@@ -11,20 +11,33 @@ use mon\orm\db\Query;
 use mon\orm\exception\DbException;
 
 /**
- * 链接DB
+ * 数据库链接器
  *
- * @method Query table(string $table) 设置表名(含表前缀)
- * @method Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
- * @method Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
- * @method Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
- * @method Query union(mixed $union, boolean $all = false) UNION查询
- * @method Query limit(mixed $offset, mixed $length = null) 查询LIMIT
- * @method Query page(integer $page, integer $length) 分页查询
- * @method Query order(mixed $field, string $order = null) 查询ORDER
- * @method Query field(mixed $field) 指定查询字段
- * @method Query alias(string $alias) 指定表别名
- * @method Query inc(string $field, integer $step = 1) 字段值增长
- * @method Query dec(string $field, integer $step = 1) 字段值减少
+ * @method \mon\orm\db\Query table(string $table) 设置表名(含表前缀)
+ * @method \mon\orm\db\Query where(mixed $field, string $op = null, mixed $condition = null) 查询条件
+ * @method \mon\orm\db\Query whereOr(mixed $field, string $op = null, mixed $condition = null) 查询条件(OR)
+ * @method \mon\orm\db\Query whereLike(string $field, mixed $condition, $logic = 'AND') 指定Like查询条件
+ * @method \mon\orm\db\Query whereNotLike(string $field, mixed $condition, $logic = 'AND') 指定NotLike查询条件
+ * @method \mon\orm\db\Query whereBetween(string $field, mixed $condition, $logic = 'AND') 指定Between查询条件
+ * @method \mon\orm\db\Query whereNotBetween(string $field, mixed $condition, $logic = 'AND') 指定NotBetween查询条件
+ * @method \mon\orm\db\Query whereIn(string $field, mixed $condition, $logic = 'AND') 指定In查询条件
+ * @method \mon\orm\db\Query whereNotIn(string $field, mixed $condition, $logic = 'AND') 指定NotIn查询条件
+ * @method \mon\orm\db\Query whereNull(string $field, $logic = 'AND') 指定Null查询条件
+ * @method \mon\orm\db\Query whereNotNull(string $field, $logic = 'AND') 指定NotNull查询条件
+ * @method \mon\orm\db\Query join(mixed $join, mixed $condition = null, string $type = 'INNER') JOIN查询
+ * @method \mon\orm\db\Query union(mixed $union, boolean $all = false) UNION查询
+ * @method \mon\orm\db\Query limit(mixed $offset, mixed $length = null) 查询LIMIT
+ * @method \mon\orm\db\Query page(integer $page, integer $length) 分页查询
+ * @method \mon\orm\db\Query order(mixed $field, string $order = null) 查询ORDER
+ * @method \mon\orm\db\Query field(mixed $field) 指定查询字段
+ * @method \mon\orm\db\Query alias(string $alias) 指定表别名
+ * @method \mon\orm\db\Query inc(string $field, float $step = 1) 字段值增长
+ * @method \mon\orm\db\Query dec(string $field, float $step = 1) 字段值减少
+ * @method integer insert(array $data = [], $replace = false, $getLastInsID = false, $key = null) 插入操作, 默认返回影响行数
+ * @method integer insertAll(array $data = [], $replace = false) 批量插入操作, 返回影响行数
+ * @method mixed action(Closure $callback) 回调方法封装执行事务
+ * @method mixed actionXA(Closure $callback, array $dbs = []) 回调方法封装执行XA事务
+ *
  * @author Mon 985558837@qq.com
  * @version v2.4.0  优化代码，支持读写分离  2022-07-11
  */
@@ -610,7 +623,7 @@ class Connection
      */
     public function getFields($table)
     {
-        $sql = 'SHOW COLUMNS FROM ' . $table;
+        $sql = "SHOW COLUMNS FROM `{$table}`";
         $pdoStatement = $this->query($sql, [], true);
         $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         $info = [];
@@ -639,7 +652,7 @@ class Connection
      */
     public function getTables($database = '')
     {
-        $sql = !empty($dbName) ? 'SHOW TABLES FROM ' . $database : 'SHOW TABLES';
+        $sql = !empty($dbName) ? "SHOW TABLES FROM `{$database}`" : 'SHOW TABLES';
         $pdoStatement = $this->query($sql, [], true);
         $result = $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         $info = [];
@@ -648,6 +661,56 @@ class Connection
         }
 
         return $info;
+    }
+
+    /**
+     * 优化表
+     *
+     * @param array|string $tables
+     * @throws DbException
+     * @return true
+     */
+    public function optimize($tables)
+    {
+        if (!$tables) {
+            throw new DbException("Please specify the table to be optimization!");
+        }
+        if (is_array($tables)) {
+            $tables = implode('`,`', $tables);
+            $optimize = $this->execute("OPTIMIZE TABLE `{$tables}`");
+        } else {
+            $optimize = $this->execute("OPTIMIZE TABLE `{$tables}`");
+        }
+        if (!$optimize) {
+            throw new DbException("data sheet [{$tables}] Repair mistakes please try again!");
+        }
+
+        return true;
+    }
+
+    /**
+     * 修复表
+     *
+     * @param array|string $tables
+     * @throws DbException
+     * @return true
+     */
+    public function repair($tables)
+    {
+        if ($tables) {
+            throw new DbException("Please specify the table to be repaired!");
+        }
+        if (is_array($tables)) {
+            $tables = implode('`,`', $tables);
+            $repair = $this->execute("REPAIR TABLE `{$tables}`");
+        } else {
+            $repair = $this->execute("REPAIR TABLE `{$tables}`");
+        }
+        if (!$repair) {
+            throw new DbException("data sheet [{$tables}] Repair mistakes please try again!");
+        }
+
+        return true;
     }
 
     /**
