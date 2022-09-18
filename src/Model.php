@@ -39,7 +39,7 @@ use mon\orm\exception\DbException;
  * @method mixed query(string $sql, array $bind = [], boolean $class = false) 执行查询sql语句
  * @method integer execute(string $sql, array $bind = []) 执行sql指令语句
  * @method string getLastSql() 获取最后执行的sql
- * @method integer getLastInsID(string $pk) 获取最后新增的ID
+ * @method string getLastInsID(string $pk) 获取最后新增的ID
  * @method void startTrans() 开启事务
  * @method void commit() 提交事务
  * @method void rollback() 回滚事务
