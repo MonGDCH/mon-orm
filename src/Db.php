@@ -178,6 +178,7 @@ class Db
 		if (!is_null($reconnect)) {
 			self::$break_reconnect = boolval($reconnect);
 		}
+
 		return self::$break_reconnect;
 	}
 

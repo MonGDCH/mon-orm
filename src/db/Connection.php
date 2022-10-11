@@ -67,7 +67,7 @@ class Connection
     /**
      * 查询结果集
      *
-     * @var PDOStatement
+     * @var \PDOStatement
      */
     protected $PDOStatement = null;
 
@@ -259,7 +259,7 @@ class Connection
     {
         if ($this->PDOStatement) {
             $error = $this->PDOStatement->errorInfo();
-            $error = $error[1] . ':' . $error[2];
+            $error = (isset($error[1]) && isset($error[2])) ? ($error[1] . ':' . $error[2]) : '';
         } else {
             $error = '';
         }
@@ -385,9 +385,7 @@ class Connection
     public function query($sql, array $bind = [], $pdo = false)
     {
         $this->queryStr = $sql;
-        if (!empty($bind)) {
-            $this->bind = $bind;
-        }
+        $this->bind = $bind;
 
         // 释放上一次查询的结果集
         if (!empty($this->PDOStatement)) {
@@ -449,9 +447,7 @@ class Connection
     public function execute($sql, array $bind = [])
     {
         $this->queryStr = $sql;
-        if (!empty($bind)) {
-            $this->bind = $bind;
-        }
+        $this->bind = $bind;
 
         //释放前次的查询结果
         if (!empty($this->PDOStatement) && $this->PDOStatement->queryString != $sql) {
