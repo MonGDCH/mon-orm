@@ -191,7 +191,7 @@ abstract class Model
      */
     public function validate()
     {
-        return Container::instance()->make($this->validate);
+        return Container::instance()->get($this->validate);
     }
 
     /**
