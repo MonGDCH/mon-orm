@@ -11,8 +11,10 @@
     "license": "Apache-2.0",
     "authors": [
         {
-            "name": "MonGDCH",
-            "email": "985558837@qq.com"
+            "name": "mon",
+            "email": "985558837@qq.com",
+            "homepage": "http://gdmon.com/",
+            "role": "Developer"
         }
     ],
     "require": {
