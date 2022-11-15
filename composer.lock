@@ -11,7 +11,7 @@
             "version": "1.4.3",
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.tencent.com/repository/composer/mongdch/mon-util/1.4.3/mongdch-mon-util-1.4.3.zip",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/mongdch/mon-util/1.4.3/mongdch-mon-util-1.4.3.zip",
                 "reference": "d3970a21f9d8a8311e1261fff211c58eb59368e1",
                 "shasum": ""
             },
