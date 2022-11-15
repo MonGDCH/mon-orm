@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace mon\http;
+namespace mon\orm;
 
 use support\Plugin;
 
