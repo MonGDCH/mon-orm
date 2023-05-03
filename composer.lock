@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "mongdch/mon-util",
-            "version": "1.4.3",
+            "version": "1.4.5",
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.cloud.tencent.com/repository/composer/mongdch/mon-util/1.4.3/mongdch-mon-util-1.4.3.zip",
-                "reference": "d3970a21f9d8a8311e1261fff211c58eb59368e1",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/mongdch/mon-util/1.4.5/mongdch-mon-util-1.4.5.zip",
+                "reference": "392d868d862d04d2d696183883da2bf283701837",
                 "shasum": ""
             },
             "require": {
@@ -22,7 +22,7 @@
             "type": "library",
             "autoload": {
                 "files": [
-                    "src/functions.php"
+                    "src/helpers.php"
                 ],
                 "psr-4": {
                     "mon\\util\\": "src/"
@@ -39,14 +39,14 @@
                     "role": "Developer"
                 }
             ],
-            "description": "常用的PHP工具类库，包含了各种各式各样的工具，如：容器、时间、验证器、多语言、图片处理、二维码生成、IP地址解析、文文件操作、数据安全、数据字典等等等等。。。",
+            "description": "常用的PHP工具类库，包含了各种各式各样的工具，如：容器、时间、验证器、多语言、图片处理、二维码生成、IP地址解析、文件操作、数据安全、数据字典等等等等。。。",
             "homepage": "http://gdmon.com/",
             "keywords": [
                 "mon",
                 "tool",
                 "util"
             ],
-            "time": "2022-10-25T10:17:23+00:00"
+            "time": "2023-04-25T02:13:57+00:00"
         },
         {
             "name": "psr/container",
