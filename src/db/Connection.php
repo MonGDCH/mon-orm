@@ -693,7 +693,7 @@ class Connection
      */
     public function repair($tables)
     {
-        if ($tables) {
+        if (!$tables) {
             throw new DbException("Please specify the table to be repaired!");
         }
         if (is_array($tables)) {
