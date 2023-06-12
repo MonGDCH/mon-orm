@@ -393,11 +393,11 @@ class Builder
         if (!empty($join)) {
             foreach ($join as $item) {
                 list($table, $type, $on) = $item;
-                $condition               = [];
+                $condition = [];
                 foreach ((array) $on as $val) {
                     if (strpos($val, '=')) {
                         list($val1, $val2) = explode('=', $val, 2);
-                        $condition[]       = $this->parseKey($val1, $options) . '=' . $this->parseKey($val2, $options);
+                        $condition[] = $this->parseKey($val1, $options) . '=' . $this->parseKey($val2, $options);
                     } else {
                         $condition[] = $val;
                     }
@@ -577,7 +577,11 @@ class Builder
             $whereStr .= $key . ' IS ' . $exp;
         } elseif (in_array($exp, ['NOT IN', 'IN'])) {
             // IN 查询
-            $value = array_unique(is_array($value) ? $value : explode(',', $value));
+            if ($value instanceof Raw) {
+                $value = [$value];
+            } else {
+                $value = array_unique(is_array($value) ? $value : explode(',', $value));
+            }
             $zone = implode(',', $this->parseValue($value, $field));
 
             $whereStr .= $key . ' ' . $exp . ' (' . (empty($zone) ? "''" : $zone) . ')';

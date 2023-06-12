@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "mongdch/mon-util",
-            "version": "1.4.5",
+            "version": "1.4.6",
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.cloud.tencent.com/repository/composer/mongdch/mon-util/1.4.5/mongdch-mon-util-1.4.5.zip",
-                "reference": "392d868d862d04d2d696183883da2bf283701837",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/mongdch/mon-util/1.4.6/mongdch-mon-util-1.4.6.zip",
+                "reference": "ecfb4fd510ed89645f902c71a62611ea607c3028",
                 "shasum": ""
             },
             "require": {
@@ -46,7 +46,7 @@
                 "tool",
                 "util"
             ],
-            "time": "2023-04-25T02:13:57+00:00"
+            "time": "2023-05-19T02:43:43+00:00"
         },
         {
             "name": "psr/container",

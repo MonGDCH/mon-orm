@@ -9,8 +9,8 @@ use Throwable;
 use mon\orm\Db;
 use PDOStatement;
 use mon\orm\Model;
-use mon\orm\db\Builder;
 use mon\orm\model\Data;
+use mon\orm\db\Builder;
 use mon\orm\db\Connection;
 use mon\orm\model\DataCollection;
 use mon\orm\exception\DbException;
@@ -873,6 +873,30 @@ class Query
     }
 
     /**
+     * left join查询SQL组装
+     *
+     * @param mixed  $join      关联的表名
+     * @param mixed  $condition 条件
+     * @return Query    当前实例自身
+     */
+    public function leftJoin($join, $condition = null)
+    {
+        return $this->join($join, $condition, 'LEFT');
+    }
+
+    /**
+     * right join查询SQL组装
+     *
+     * @param mixed  $join      关联的表名
+     * @param mixed  $condition 条件
+     * @return Query    当前实例自身
+     */
+    public function rightJoin($join, $condition = null)
+    {
+        return $this->join($join, $condition, 'RIGHT');
+    }
+
+    /**
      * USING支持 用于多表删除
      *
      * @param string|array $using USING
@@ -1156,7 +1180,7 @@ class Query
     /**
      * distinct查询
      *
-     * @param string|boolean $distinct 是否唯一
+     * @param string|boolean $distinct 是否去重
      * @return Query    当前实例自身
      */
     public function distinct($distinct = false)
