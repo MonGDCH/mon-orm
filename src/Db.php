@@ -60,7 +60,7 @@ class Db
 	/**
 	 * DB实例列表
 	 *
-	 * @var array
+	 * @var Connection[]
 	 */
 	private static $pool = [];
 
@@ -165,6 +165,16 @@ class Db
 		}
 
 		return isset(self::$config[$name]) ? self::$config[$name] : [];
+	}
+
+	/**
+	 * 获取连接池
+	 *
+	 * @return Connection[]
+	 */
+	public static function getPool(): array
+	{
+		return static::$pool;
 	}
 
 	/**

@@ -323,9 +323,8 @@ class Connection
         // 随机获取读写配置节点
         $dbConfig = [];
         if (!empty($dbConfigs)) {
-            $total = count($dbConfigs) - 1;
-            $num = floor(mt_rand(0, $total > 0 ? $total : 0));
-            $dbConfig = $dbConfigs[$num];
+            $key = array_rand($dbConfigs);
+            $dbConfig = $dbConfigs[$key];
         }
         // 覆盖生成配置
         $config = $this->config;
@@ -336,6 +335,25 @@ class Connection
         }
 
         return $this->connect($config);
+    }
+
+    /**
+     * ping连数据库
+     *
+     * @param string $sql   执行的SQL
+     * @return void
+     */
+    public function ping(string $sql = 'SELECT 1')
+    {
+        if (!is_null($this->link)) {
+            $this->link->query($sql);
+        }
+        if (!is_null($this->readLink)) {
+            $this->link->query($sql);
+        }
+        if (!is_null($this->writeLink)) {
+            $this->link->query($sql);
+        }
     }
 
     /**

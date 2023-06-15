@@ -18,14 +18,13 @@ use Workerman\Timer;
 class ORM
 {
     /**
-     * U注册ORM使用
+     * Gaia注册ORM使用
      *
      * @param boolean $reconnect    ORM是否开启断线重连
      * @param integer $timer        开启断线重连后定时器轮询，0则不使用，大于0则定时执行 $querySql
-     * @param string $querySql      定时执行的SQL
      * @return void
      */
-    public static function register(bool $reconnect = false, int $timer = 55, string $querySql = 'SELECT 1'): void
+    public static function register(bool $reconnect = false, int $timer = 55): void
     {
         // 定义配置
         $config = Config::instance()->get('database', []);
@@ -36,12 +35,9 @@ class ORM
             $log = "connect database => mysql:host={$dbConfig['host']};port={$dbConfig['port']};dbname={$dbConfig['database']};charset={$dbConfig['charset']}";
             Logger::instance()->channel()->log('sql', $log);
         });
-        Db::listen('query', function ($dbConnect, $dbConfig) use ($querySql) {
+        Db::listen('query', function ($dbConnect, $dbConfig) {
             // SQL查询
-            $sql = $dbConnect->getLastSql();
-            if ($sql != $querySql) {
-                Logger::instance()->channel()->log('sql', $sql);
-            }
+            Logger::instance()->channel()->log('sql', $sql = $dbConnect->getLastSql());
         });
         Db::listen('execute', function ($dbConnect, $dbConfig) {
             // SQL执行
@@ -51,9 +47,10 @@ class ORM
         Db::reconnect($reconnect);
         if ($reconnect && $timer > 0) {
             // 轮询查询一次，确保不断开
-            Timer::add($timer, function () use ($config, $querySql) {
-                foreach ($config as $key => $value) {
-                    Db::connect($key)->query($querySql);
+            Timer::add($timer, function () {
+                $pool = Db::getPool();
+                foreach ($pool as $connect) {
+                    $connect->ping();
                 }
             });
         }
