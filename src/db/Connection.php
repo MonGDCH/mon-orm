@@ -343,7 +343,7 @@ class Connection
      * @param string $sql   执行的SQL
      * @return void
      */
-    public function ping(string $sql = 'SELECT 1')
+    public function ping($sql = 'SELECT 1')
     {
         if (!is_null($this->link)) {
             $this->link->query($sql);
