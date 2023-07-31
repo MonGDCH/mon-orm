@@ -47,6 +47,7 @@ use mon\orm\exception\DbException;
  * @method void commitXA(string $xid) 提交XA事务
  * @method void rollbackXA(string $xid) 回滚XA事务
  * @method void prepareXA(string $xid) 预编译XA事务
+ * @method string quote(string $value) PDO解析参数
  * @author Mon 985558837@qq.com
  * @version v2.3.2 优化注解 2022-07-11
  */
