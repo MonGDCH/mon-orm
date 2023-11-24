@@ -27,7 +27,9 @@ class ORM
     public static function register(bool $reconnect = false, int $timer = 55): void
     {
         // 定义配置
-        $config = Config::instance()->get('database', []);
+        $connection = Config::instance()->get('database.default', 'default');
+        Db::setConnection($connection);
+        $config = Config::instance()->get('database.connections', []);
         Db::setConfig($config);
         // 绑定事件
         Db::listen('connect', function ($dbConnect, $dbConfig) {

@@ -107,6 +107,20 @@ class Connection
     protected $transLevel = 0;
 
     /**
+     * 重连次数
+     * 
+     * @var integer
+     */
+    protected $reConnectTimes = 0;
+
+    /**
+     * 最大重连次数
+     *
+     * @var integer
+     */
+    protected $maxReConnectTimes = 3;
+
+    /**
      * DB配置
      *
      * @var array
@@ -449,27 +463,45 @@ class Connection
             Db::trigger('query', $this, $bind);
 
             // 返回结果集
+            $this->reConnectTimes = 0;
             return $this->getResult($pdo, $procedure);
-        } catch (PDOException $e) {
-            // 断线重连
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $pdo);
-            }
-
-            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
         } catch (Exception $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->query($sql, $bind, $pdo);
-            }
-
-            throw $e;
+            return $this->errorQueryHandle($e, $sql, $bind, $pdo);
         } catch (Throwable $e) {
+            return $this->errorQueryHandle($e, $sql, $bind, $pdo);
+        }
+    }
+
+    /**
+     * 执行查询语句异常处理
+     *
+     * @param Exception|Throwable $e
+     * @param  string $sql  SQL语句
+     * @param  array  $bind 绑定的值
+     * @param  boolean $pdo  是否返回PDO对象
+     * @return mixed
+     */
+    protected function errorQueryHandle($e, $sql, array $bind, $pdo)
+    {
+        if ($this->transLevel > 0) {
+            // 事务活动中时不应该进行重试，应直接中断执行，防止造成污染。
             if ($this->isBreak($e)) {
+                // 尝试对事务计数进行重置
+                $this->transLevel = 0;
+            }
+        } else {
+            // 重新执行
+            if ($this->reConnectTimes <= $this->maxReConnectTimes && $this->isBreak($e)) {
+                ++$this->reConnectTimes;
                 return $this->close()->query($sql, $bind, $pdo);
             }
-
-            throw $e;
         }
+
+        if ($e instanceof PDOException) {
+            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
+        }
+
+        throw $e;
     }
 
     /**
@@ -512,27 +544,45 @@ class Connection
             // 返回影响行数
             $this->numRows = $this->PDOStatement->rowCount();
 
+            $this->reConnectTimes = 0;
             return $this->numRows;
-        } catch (PDOException $e) {
-            // 断线重连
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-
-            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
         } catch (Exception $e) {
-            if ($this->isBreak($e)) {
-                return $this->close()->execute($sql, $bind);
-            }
-
-            throw $e;
+            return $this->errorExceuteHandle($e, $sql, $bind);
         } catch (Throwable $e) {
+            // PHP7+支持
+            return $this->errorExceuteHandle($e, $sql, $bind);
+        }
+    }
+
+    /**
+     * 执行命令语句异常处理
+     *
+     * @param Exception|Throwable $e
+     * @param  string $sql  SQL语句
+     * @param  array  $bind 绑定的值
+     * @return integer
+     */
+    protected function errorExceuteHandle($e, $sql, array $bind)
+    {
+        if ($this->transLevel > 0) {
+            // 事务活动中时不应该进行重试，应直接中断执行，防止造成污染。
             if ($this->isBreak($e)) {
+                // 尝试对事务计数进行重置
+                $this->transLevel = 0;
+            }
+        } else {
+            // 重新执行
+            if ($this->reConnectTimes <= $this->maxReConnectTimes && $this->isBreak($e)) {
+                ++$this->reConnectTimes;
                 return $this->close()->execute($sql, $bind);
             }
-
-            throw $e;
         }
+
+        if ($e instanceof PDOException) {
+            throw new DbException('PDO Error: ' . $e->getMessage(), DbException::PDO_EXCEPTION, $this, $e);
+        }
+
+        throw $e;
     }
 
     /**
@@ -543,22 +593,28 @@ class Connection
      */
     public function startTrans()
     {
-        ++$this->transLevel;
         try {
+            ++$this->transLevel;
             // 只有当事务无嵌套才开启事务
             if ($this->transLevel == 1) {
                 $this->getLink()->beginTransaction();
                 // 触发开启事务事件
                 Db::trigger('startTrans', $this);
-            } elseif ($this->transLevel > 1) {
+            } elseif ($this->transLevel > 1 && $this->getLink()->inTransaction()) {
                 $this->getLink()->exec($this->parseSavepoint('trans' . $this->transLevel));
             }
+            $this->reConnectTimes = 0;
         } catch (Exception $e) {
-            if ($this->isBreak($e)) {
+            if ($this->transLevel == 1 && $this->reConnectTimes <= $this->maxReConnectTimes && $this->isBreak($e)) {
                 --$this->transLevel;
+                ++$this->reConnectTimes;
                 return $this->close()->startTrans();
             }
 
+            if ($this->isBreak($e)) {
+                // 尝试对事务计数进行重置
+                $this->transLevel = 0;
+            }
             throw $e;
         }
     }
@@ -570,7 +626,7 @@ class Connection
      */
     public function commit()
     {
-        if ($this->transLevel == 1) {
+        if ($this->transLevel == 1 && $this->getLink()->inTransaction()) {
             $this->getLink()->commit();
             // 触发提交事务事件
             Db::trigger('commitTrans', $this);
@@ -585,14 +641,17 @@ class Connection
      */
     public function rollback()
     {
-        if ($this->transLevel == 1) {
-            $this->transLevel = 0;
-            $this->getLink()->rollBack();
-            // 触发回滚事务事件
-            Db::trigger('rollbackTrans', $this);
-        } elseif ($this->transLevel > 1) {
-            $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
+        if ($this->getLink()->inTransaction()) {
+            if ($this->transLevel == 1) {
+                $this->transLevel = 0;
+                $this->getLink()->rollBack();
+                // 触发回滚事务事件
+                Db::trigger('rollbackTrans', $this);
+            } elseif ($this->transLevel > 1) {
+                $this->getLink()->exec($this->parseSavepointRollBack('trans' . $this->transLevel));
+            }
         }
+
         $this->transLevel = max(0, $this->transLevel - 1);
     }
 

@@ -51,11 +51,11 @@ use mon\orm\exception\DbException;
 class Db
 {
 	/**
-	 * 默认配置节点名称
-	 * 
+	 * 默认链接的配置节点名称
+	 *
 	 * @var string
 	 */
-	const DEFAULT_KEY = 'default';
+	private static $connection = 'default';
 
 	/**
 	 * DB实例列表
@@ -125,7 +125,7 @@ class Db
 	{
 		if (empty($config)) {
 			// 未定义配置信息，获取默认配置信息
-			$config = self::getConfig(self::DEFAULT_KEY);
+			$config = self::getConfig(static::$connection);
 		} elseif (is_string($config)) {
 			// 非空字符串，即指定配置节点，获取对应配置
 			$config = self::getConfig($config);
@@ -139,6 +139,17 @@ class Db
 		}
 
 		return self::$pool[$key];
+	}
+
+	/**
+	 * 设置默认链接
+	 *
+	 * @param string $name 默认连接配置名称
+	 * @return void
+	 */
+	public static function setConnection($name)
+	{
+		self::$connection = $name;
 	}
 
 	/**
